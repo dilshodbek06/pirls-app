@@ -62,7 +62,7 @@ const Contact = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-linear-to-r from-cyan-500 to-green-500">
+      <div className="bg-linear-to-r px-4 from-cyan-500 to-green-500">
         <Header />
       </div>
 
