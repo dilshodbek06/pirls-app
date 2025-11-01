@@ -66,7 +66,7 @@ const Hero = () => {
                   size="lg"
                   className="text-lg px-8 py-6 bg-white/10 text-white border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg"
                 >
-                  Matnlar ro&apos;yhati
+                  Matnlar ro&apos;yxati
                 </Button>
               </Link>
             </div>
