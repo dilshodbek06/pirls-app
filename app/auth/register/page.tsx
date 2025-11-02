@@ -349,7 +349,7 @@ const Register = () => {
                     id="age"
                     name="age"
                     type="number"
-                    placeholder="To‘liq yoshingizni kiriting..."
+                    placeholder="Yoshingizni kiriting..."
                     value={formData.age}
                     onChange={handleChange}
                     min="1"
