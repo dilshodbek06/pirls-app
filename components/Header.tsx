@@ -13,6 +13,7 @@ const Header = () => {
     { path: "/", label: "Asosiy" },
     { path: "/passages", label: "Barcha matnlar" },
     { path: "/results", label: "Natijalar" },
+    { path: "/teacher-panel", label: "O'qituvchi kabineti" },
     { path: "/about", label: "Biz haqimizda" },
     { path: "/contact", label: "Aloqa" },
   ];

@@ -12,9 +12,9 @@ const About = () => {
       <main className="flex-1 py-12 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl font-bold mb-4">About PIRLS EDU</h1>
+            <h1 className="text-4xl font-bold mb-4">PIRLS EDU haqida</h1>
             <p className="text-lg text-muted-foreground">
-              Empowering students to become confident readers
+              O‘quvchilarda o‘qishga bo‘lgan ishonchni shakllantirish
             </p>
           </div>
 
@@ -26,15 +26,19 @@ const About = () => {
                     <Target className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
+                    <h2 className="text-2xl font-bold mb-4">
+                      Bizning maqsadimiz
+                    </h2>
                     <p className="text-muted-foreground leading-relaxed">
-                      PIRLS EDU is dedicated to improving reading literacy among
-                      school students worldwide. We believe that strong reading
-                      comprehension skills are the foundation of academic
-                      success and lifelong learning. Our platform provides
-                      carefully crafted reading passages and questions that help
-                      students develop critical thinking and comprehension
-                      abilities.
+                      PIRLS EDU butun dunyo maktab o‘quvchilari o‘rtasida o‘qish
+                      savodxonligini oshirishga bag‘ishlangan. Biz o‘qish va
+                      matnni tushunish ko‘nikmalari akademik muvaffaqiyat hamda
+                      umrbod o‘qishga bo‘lgan qiziqishning asosini tashkil
+                      etadi, deb ishonamiz. Bizning platformamiz o‘quvchilarga
+                      tanqidiy fikrlash va matnni chuqur tushunish
+                      qobiliyatlarini rivojlantirishga yordam beruvchi,
+                      ehtiyotkorlik bilan tanlangan matnlar va savollarni taqdim
+                      etadi.
                     </p>
                   </div>
                 </div>
@@ -51,41 +55,42 @@ const About = () => {
                     <BookOpen className="h-6 w-6 text-secondary" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold mb-4">What We Offer</h2>
+                    <h2 className="text-2xl font-bold mb-4">
+                      Biz taklif etamiz
+                    </h2>
                     <ul className="space-y-3 text-muted-foreground">
                       <li className="flex items-start">
                         <span className="mr-2 text-primary">•</span>
                         <span>
-                          Diverse reading passages covering various topics and
-                          difficulty levels
+                          Turli mavzular va murakkablik darajalarini qamrab
+                          olgan xilma-xil o‘qish matnlari
                         </span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-primary">•</span>
                         <span>
-                          Interactive comprehension questions that test
-                          understanding
+                          Tushunishni tekshiruvchi interaktiv savollar
                         </span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-primary">•</span>
                         <span>
-                          Immediate feedback to help students learn from their
-                          answers
+                          O‘quvchilarga javoblaridan o‘rganishga yordam beruvchi
+                          darhol fikr-mulohaza
                         </span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-primary">•</span>
                         <span>
-                          Age-appropriate content designed for school-level
-                          learners
+                          Maktab yoshidagi o‘quvchilar uchun moslashtirilgan
+                          yoshga mos mazmun
                         </span>
                       </li>
                       <li className="flex items-start">
                         <span className="mr-2 text-primary">•</span>
                         <span>
-                          A user-friendly interface that makes learning
-                          enjoyable
+                          O‘qishni yoqimli jarayonga aylantiruvchi qulay va
+                          foydalanuvchiga mos interfeys
                         </span>
                       </li>
                     </ul>
@@ -105,20 +110,21 @@ const About = () => {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold mb-4">
-                      For Students and Educators
+                      O‘quvchilar va o‘qituvchilar uchun
                     </h2>
                     <p className="text-muted-foreground leading-relaxed mb-4">
-                      Whether you&apos;re a student looking to improve your
-                      reading skills or an educator seeking quality resources
-                      for your classroom, PIRLS EDU is here to help. Our
-                      platform can be used for independent practice, homework
-                      assignments, or classroom activities.
+                      Agar siz o‘qish ko‘nikmalaringizni rivojlantirmoqchi
+                      bo‘lgan o‘quvchi bo‘lsangiz yoki sinfingiz uchun sifatli
+                      resurslarni izlayotgan o‘qituvchi bo‘lsangiz, PIRLS EDU
+                      sizga yordam berishga tayyor. Bizning platformamizdan
+                      mustaqil mashg‘ulotlar, uy vazifalari yoki sinfdagi dars
+                      faoliyatlari uchun foydalanish mumkin.
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      We continuously update our content to ensure it remains
-                      engaging, relevant, and aligned with educational
-                      standards. Join us in making reading comprehension
-                      accessible and fun for all learners!
+                      Biz mazmunimizni doimiy ravishda yangilab boramiz, shunda
+                      u qiziqarli, dolzarb va ta’lim standartlariga mos bo‘lib
+                      qoladi. Keling, barcha o‘quvchilar uchun o‘qish va
+                      tushunishni qulay hamda zavqli jarayonga aylantiraylik!
                     </p>
                   </div>
                 </div>
@@ -132,11 +138,11 @@ const About = () => {
               <div className="bg-linear-to-r from-primary to-accent rounded-xl p-8 text-center">
                 <Sparkles className="h-12 w-12 text-primary-foreground mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-primary-foreground mb-2">
-                  Start Your Journey Today
+                  Bugunoq o‘qish safaringizni boshlang
                 </h2>
                 <p className="text-primary-foreground/90">
-                  Join thousands of students improving their reading skills with
-                  PIRLS EDU
+                  PIRLS EDU yordamida o‘qish ko‘nikmalarini rivojlantirayotgan
+                  minglab o‘quvchilarga qo‘shiling
                 </p>
               </div>
             </section>
