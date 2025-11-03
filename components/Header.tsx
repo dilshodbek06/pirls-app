@@ -4,6 +4,7 @@ import { useState } from "react";
 import { BookOpen, Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 const Header = () => {
   const location = usePathname();
@@ -24,8 +25,14 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="rounded-lg bg-white/20 backdrop-blur-sm p-2 transition-transform group-hover:scale-110 border border-white/30">
-              <BookOpen className="h-6 w-6 text-white" />
+            <div className="">
+              <Image
+                className="rounded-full"
+                alt="PIRLS EDU"
+                src={"/images/logo.png"}
+                width={50}
+                height={50}
+              />
             </div>
             <span className="text-xl font-bold text-white drop-shadow-lg">
               PIRLS EDU
