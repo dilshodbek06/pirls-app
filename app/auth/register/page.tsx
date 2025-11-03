@@ -415,7 +415,7 @@ const Register = () => {
                 <Button
                   type="submit"
                   variant="hero"
-                  className="w-full"
+                  className="w-full hover:scale-[1.01]"
                   size="lg"
                 >
                   Qo‘shilish

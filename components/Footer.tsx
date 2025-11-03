@@ -1,4 +1,4 @@
-import { BookOpen, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="container max-w-340 mx-auto px-4 sm:px-6 lg:px-0 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="">
+            <div>
               <Image
                 className="rounded-full"
                 alt="PIRLS EDU"

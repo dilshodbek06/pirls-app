@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Menu, X } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -14,7 +14,8 @@ const Header = () => {
     { path: "/", label: "Asosiy" },
     { path: "/passages", label: "Barcha matnlar" },
     { path: "/results", label: "Natijalar" },
-    { path: "/teacher-panel", label: "O'qituvchi kabineti" },
+    { path: "/auth/teacher-register", label: "O'qituvchi kabineti" },
+    { path: "/awards", label: "Sertifikatlar" },
     { path: "/about", label: "Biz haqimizda" },
     { path: "/contact", label: "Aloqa" },
   ];
@@ -25,7 +26,7 @@ const Header = () => {
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <div className="">
+            <div>
               <Image
                 className="rounded-full"
                 alt="PIRLS EDU"
