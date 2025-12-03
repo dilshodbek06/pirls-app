@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,12 +13,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { GraduationCap, MapPin, Building2, User } from "lucide-react";
+import {
+  GraduationCap,
+  MapPin,
+  Building2,
+  User,
+  Mail,
+  Lock,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { registerAction } from "@/actions/auth";
+import toast from "react-hot-toast";
 
 // --- Data: Viloyatlar → Tumanlar ---
-// Note: This list is not exhaustive but covers all regions with common districts.
-// You can expand any region if you need more granular coverage later.
 const UZ_REGIONS: Record<string, string[]> = {
   "Toshkent shahri": [
     "Bektemir",
@@ -235,27 +241,71 @@ const TeacherRegister = () => {
     province: "",
     district: "",
     schoolName: "",
+    email: "",
+    password: "",
   });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     if (
       !formData.fullName ||
       !formData.age ||
       !formData.province ||
       !formData.district ||
-      !formData.schoolName
+      !formData.schoolName ||
+      !formData.email ||
+      !formData.password
     ) {
+      setError("Barcha maydonlar talab etiladi");
+      setIsLoading(false);
       return;
     }
 
     if (parseInt(formData.age) < 18 || parseInt(formData.age) > 100) {
+      setError("Yosh 18 dan 100 gacha bo'lishi kerak");
+      setIsLoading(false);
       return;
     }
 
-    localStorage.setItem("teacherData", JSON.stringify(formData));
-    router.push("/");
+    // Validate school name format (e.g., "45-maktab")
+    const schoolNamePattern = /^\d+-/;
+    if (!schoolNamePattern.test(formData.schoolName.trim())) {
+      setError(
+        'Maktab nomi raqam bilan boshlanishi kerak (masalan: "45-maktab")'
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const formDataObj = new FormData();
+      formDataObj.append("email", formData.email);
+      formDataObj.append("password", formData.password);
+      formDataObj.append("fullName", formData.fullName);
+      formDataObj.append("age", formData.age);
+      formDataObj.append("province", formData.province);
+      formDataObj.append("region", formData.district);
+      formDataObj.append("schoolName", formData.schoolName);
+
+      const result = await registerAction(formDataObj);
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        toast.success("Tizimga muvaffaqiyatli kirdingiz!");
+        router.push("/");
+      }
+    } catch (err) {
+      setError("Ro'yhatdan o'tishda xatolik yuz berdi. Qayta urinib ko'ring.");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (field: string, value: string) => {
@@ -274,9 +324,6 @@ const TeacherRegister = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-linear-to-r px-4 from-cyan-500 to-green-500">
-        <Header />
-      </div>
       <main className="flex-1 container mx-auto px-4 py-8 md:py-16">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8 md:mb-6 animate-fade-in">
@@ -297,6 +344,11 @@ const TeacherRegister = () => {
           <Card className="animate-fade-in" style={{ animationDelay: "100ms" }}>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Full Name */}
                   <div className="space-y-2 md:col-span-2">
@@ -315,9 +367,9 @@ const TeacherRegister = () => {
                       onChange={(e) => handleChange("fullName", e.target.value)}
                       className="h-11"
                       required
+                      disabled={isLoading}
                     />
                   </div>
-
                   {/* Age */}
                   <div className="space-y-2">
                     <Label htmlFor="age">Yosh</Label>
@@ -331,9 +383,9 @@ const TeacherRegister = () => {
                       max={100}
                       className="h-11"
                       required
+                      disabled={isLoading}
                     />
                   </div>
-
                   {/* Province */}
                   <div className="space-y-2">
                     <Label
@@ -347,6 +399,7 @@ const TeacherRegister = () => {
                       value={formData.province}
                       onValueChange={(value) => handleChange("province", value)}
                       required
+                      disabled={isLoading}
                     >
                       <SelectTrigger className="h-11 w-full">
                         <SelectValue placeholder="Viloyatingizni tanlang" />
@@ -360,7 +413,6 @@ const TeacherRegister = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
                   {/* District */}
                   <div className="space-y-2">
                     <Label
@@ -374,7 +426,7 @@ const TeacherRegister = () => {
                     <Select
                       value={formData.district}
                       onValueChange={(value) => handleChange("district", value)}
-                      disabled={!formData.province}
+                      disabled={!formData.province || isLoading}
                       required
                     >
                       <SelectTrigger className="h-11 w-full">
@@ -395,7 +447,6 @@ const TeacherRegister = () => {
                       </SelectContent>
                     </Select>
                   </div>
-
                   {/* School Name */}
                   <div className="space-y-2">
                     <Label
@@ -415,6 +466,44 @@ const TeacherRegister = () => {
                       }
                       className="h-11"
                       required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {/* Email */}
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Email manzilingizni kiriting..."
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="flex items-center gap-2"
+                    >
+                      <Lock className="h-4 w-4 text-primary" />
+                      Parol
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Parol o'ylab toping..."
+                      value={formData.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
                     />
                   </div>
                 </div>
@@ -425,9 +514,12 @@ const TeacherRegister = () => {
                     type="submit"
                     size="lg"
                     className="w-full gap-2 hover:scale-[1.01]"
+                    disabled={isLoading}
                   >
                     <GraduationCap className="h-5 w-5" />
-                    Ro‘yxatdan o‘tish
+                    {isLoading
+                      ? "Ro'yhatdan o'tilmoqda..."
+                      : "Ro'yxatdan o'tish"}
                   </Button>
                 </div>
               </form>

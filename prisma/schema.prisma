@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+}
+
+model User {
+  id         String @id @default(cuid())
+  email      String @unique
+  password   String
+  fullName   String
+  age        Int
+  province   String
+  region     String
+  schoolName String
+  role       Role   @default(TEACHER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
