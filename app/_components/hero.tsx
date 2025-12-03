@@ -16,17 +16,6 @@ const Hero = () => {
             width={400}
             height={400}
           />
-          {/* <Image
-            src="/images/hero-bg2.jpg"
-            alt="Children studying together"
-            fill
-            priority
-            className="object-cover"
-            // Tell the browser how much viewport width the image occupies at breakpoints
-            sizes="(max-width: 640px) 100vw,
-           (max-width: 1024px) 100vw,
-           100vw"
-          /> */}
           <div className="absolute inset-0 bg-linear-to-br from-primary/85 via-accent/75 to-secondary/85" />
         </div>
 

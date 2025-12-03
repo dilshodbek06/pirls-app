@@ -5,17 +5,17 @@ import { Menu, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser } from "@/hooks/use-user";
+import { UserAvatarDropdown } from "@/components/UserAvatarDropdown";
 
 const Header = () => {
   const location = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const { user, isLoggedIn, isLoading } = useUser();
 
   const navLinks = [
     { path: "/", label: "Asosiy" },
     { path: "/passages", label: "Barcha matnlar" },
-    { path: "/results", label: "Natijalar" },
-    { path: "/auth/teacher-register", label: "O'qituvchi kabineti" },
-    { path: "/awards", label: "Sertifikatlar" },
     { path: "/about", label: "Biz haqimizda" },
     { path: "/contact", label: "Aloqa" },
   ];
@@ -58,6 +58,22 @@ const Header = () => {
             ))}
           </nav>
 
+          {/* Auth Section */}
+          <div className="hidden md:flex items-center gap-4">
+            {isLoading ? (
+              <div className="w-8 h-8 rounded-full bg-white/20 animate-pulse" />
+            ) : isLoggedIn && user ? (
+              <UserAvatarDropdown user={user} />
+            ) : (
+              <Link
+                href="/auth/teacher-login"
+                className="text-sm font-semibold text-white hover:text-white/80 transition-colors bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30"
+              >
+                O‘qituvchi kabinetiga kirish
+              </Link>
+            )}
+          </div>
+
           {/* Mobile Hamburger Button */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
@@ -88,6 +104,41 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+
+            {/* Mobile Auth Section */}
+            <div className="w-full border-t border-white/20 pt-4 mt-2 space-y-2">
+              {isLoading ? (
+                <div className="w-full h-10 rounded-lg bg-white/20 animate-pulse" />
+              ) : isLoggedIn && user ? (
+                <>
+                  <div className="text-sm font-medium text-white/90 text-center px-4 py-2">
+                    {user.email}
+                  </div>
+                  <Link
+                    href="/admin/passages"
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-center text-sm font-semibold text-white/90 hover:text-white transition-colors bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg"
+                  >
+                    Teacher Cabinet
+                  </Link>
+                  <Link
+                    href="/api/auth/logout"
+                    onClick={() => setMenuOpen(false)}
+                    className="block text-center text-sm font-semibold text-red-400 hover:text-red-300 transition-colors bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg"
+                  >
+                    Logout
+                  </Link>
+                </>
+              ) : (
+                <Link
+                  href="/auth/teacher-login"
+                  onClick={() => setMenuOpen(false)}
+                  className="block text-center text-sm font-semibold text-white hover:text-white/80 transition-colors bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30 w-full"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
           </nav>
         </div>
       )}

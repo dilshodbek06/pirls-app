@@ -53,7 +53,7 @@ export async function logoutAction() {
   session.destroy();
 
   // Redirect to home page after logout
-  redirect("/auth/login");
+  redirect("/auth/teacher-login");
 }
 
 export async function registerAction(formData: FormData) {
