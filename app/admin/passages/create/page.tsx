@@ -1,473 +1,808 @@
-// app/editor/page.tsx
 "use client";
-import React, { useRef, useState } from "react";
-import { v4 as uuid } from "uuid";
 
-// --- Types ---
-type Block =
-  | { id: string; type: "paragraph"; text: string }
-  | { id: string; type: "image"; src: string; alt: string };
+import React, { useRef, useState, useCallback } from "react";
+import { createPassage } from "@/actions/passage";
+import { useRouter } from "next/navigation";
+import {
+  X,
+  CheckCircle,
+  MessageSquare,
+  ListOrdered,
+  BookOpen,
+  Eye,
+  Pencil,
+  Save,
+  Upload,
+  ClipboardCheck,
+  GraduationCap,
+  Loader2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { Grade } from "@/lib/generated/prisma/enums";
+import type {
+  ClosedQuestion,
+  OpenQuestion,
+  PassageData,
+  Question,
+} from "@/types";
+import toast from "react-hot-toast";
 
-type QuestionCommon = { id: string; prompt: string };
+// Utility to generate a simple unique ID (replaces uuid)
+const generateId = () =>
+  Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 
-type OpenQuestion = QuestionCommon & { kind: "open" };
+// --- Global UI Components (replacing external libraries) ---
 
-type ClosedQuestion = QuestionCommon & {
-  kind: "closed";
-  options: [string, string, string, string];
-  correctIndex?: number; // optional
-};
+interface SimpleModalProps {
+  message: string;
+  onClose: () => void;
+  icon: React.ReactNode;
+}
 
-type Question = OpenQuestion | ClosedQuestion;
-
-type PassageData = {
-  title: string;
-  author: string;
-  blocks: Block[];
-  questions: Question[];
-};
-
-export default function EditorPage() {
-  const [title, setTitle] = useState<string>("");
-  const [author, setAuthor] = useState<string>("");
-  const [blocks, setBlocks] = useState<Block[]>([
-    { id: uuid(), type: "paragraph", text: "" },
-  ]);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [preview, setPreview] = useState<boolean>(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  // ----- Blocks -----
-  const addParagraph = () =>
-    setBlocks((b) => [...b, { id: uuid(), type: "paragraph", text: "" }]);
-
-  const addImageFromFile = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const src = String(e.target?.result || "");
-      setBlocks((b) => [...b, { id: uuid(), type: "image", src, alt: "" }]);
-    };
-    reader.readAsDataURL(file);
-  };
-
-  const handlePickImage = () => fileInputRef.current?.click();
-
-  const moveBlock = (index: number, dir: -1 | 1) => {
-    setBlocks((b) => {
-      const next = [...b];
-      const newIndex = index + dir;
-      if (newIndex < 0 || newIndex >= next.length) return next;
-      const [item] = next.splice(index, 1);
-      next.splice(newIndex, 0, item);
-      return next;
-    });
-  };
-
-  const removeBlock = (index: number) =>
-    setBlocks((b) => b.filter((_, i) => i !== index));
-
-  const updateParagraph = (id: string, text: string) =>
-    setBlocks((b) => b.map((blk) => (blk.id === id ? { ...blk, text } : blk)));
-
-  const updateImageAlt = (id: string, alt: string) =>
-    setBlocks((b) => b.map((blk) => (blk.id === id ? { ...blk, alt } : blk)));
-
-  // ----- Questions (Admin) -----
-  const addOpenQuestion = () =>
-    setQuestions((q) => [
-      ...q,
-      { id: uuid(), kind: "open", prompt: "Yozma javob uchun savol" },
-    ]);
-
-  const addClosedQuestion = () =>
-    setQuestions((q) => [
-      ...q,
-      {
-        id: uuid(),
-        kind: "closed",
-        prompt: "To'g'ri javobni tanlang",
-        options: ["A", "B", "C", "D"],
-      },
-    ]);
-
-  const updateQuestionPrompt = (id: string, prompt: string) =>
-    setQuestions((qs) =>
-      qs.map((qq) => (qq.id === id ? { ...qq, prompt } : qq))
-    );
-
-  const updateClosedOption = (
-    id: string,
-    index: 0 | 1 | 2 | 3,
-    value: string
-  ) =>
-    setQuestions((qs) =>
-      qs.map((qq) =>
-        qq.id === id && qq.kind === "closed"
-          ? {
-              ...qq,
-              options: qq.options.map((o, i) => (i === index ? value : o)) as [
-                string,
-                string,
-                string,
-                string
-              ],
-            }
-          : qq
-      )
-    );
-
-  const setClosedCorrect = (id: string, idx: number) =>
-    setQuestions((qs) =>
-      qs.map((qq) =>
-        qq.id === id && qq.kind === "closed" ? { ...qq, correctIndex: idx } : qq
-      )
-    );
-
-  const removeQuestion = (index: number) =>
-    setQuestions((q) => q.filter((_, i) => i !== index));
-
-  // ----- Export -----
-  const exportJSON = () => {
-    const data: PassageData = { title, author, blocks, questions };
-    const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `$${(title || "passage").replace(/\s+/g, "-")}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
+function SimpleModal({ message, onClose, icon }: SimpleModalProps) {
+  if (!message) return null;
   return (
-    <div className="min-h-screen bg-neutral-50">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-semibold">Passage Editor</h1>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setPreview((p) => !p)}
-              className="px-3 py-2 rounded-2xl shadow bg-white hover:bg-neutral-100"
-            >
-              {preview ? "Edit" : "Preview"}
-            </button>
-            <button
-              onClick={exportJSON}
-              className="px-3 py-2 rounded-2xl shadow bg-white hover:bg-neutral-100"
-            >
-              Export JSON
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-70 z-50 flex items-center justify-center p-4">
+      <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-2xl transform transition-all duration-300 scale-100">
+        <div className="flex flex-col items-center text-center">
+          <div className="mb-4 text-blue-600">{icon}</div>
+          <h4 className="text-xl font-bold text-gray-900 mb-4">{message}</h4>
+          <button
+            onClick={onClose}
+            className="w-full px-4 py-2 text-sm font-medium rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition"
+          >
+            Tushunarli
+          </button>
         </div>
-
-        {/* Title & Author */}
-        {!preview ? (
-          <div className="mt-6 grid gap-3">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Title (e.g., Enemy Pie)"
-              className="w-full rounded-2xl border p-3 bg-white"
-            />
-            <input
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
-              placeholder="Subtitle / byline"
-              className="w-full rounded-2xl border p-3 bg-white"
-            />
-          </div>
-        ) : (
-          <header className="mt-10 mb-6 text-center">
-            <h2 className="text-4xl font-bold">{title || "Untitled"}</h2>
-            {author && <p className="mt-2 italic text-neutral-600">{author}</p>}
-          </header>
-        )}
-
-        {/* Blocks */}
-        {!preview ? (
-          <div className="mt-6 space-y-4">
-            {blocks.map((blk, i) => (
-              <div
-                key={blk.id}
-                className="group bg-white border rounded-2xl p-4 shadow-sm"
-              >
-                <div className="flex justify-between mb-2">
-                  <div className="text-sm text-neutral-500">
-                    {blk.type.toUpperCase()} #{i + 1}
-                  </div>
-                  <div className="flex gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition">
-                    <button
-                      className="px-2 py-1 rounded-xl border"
-                      onClick={() => moveBlock(i, -1)}
-                    >
-                      ↑
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded-xl border"
-                      onClick={() => moveBlock(i, 1)}
-                    >
-                      ↓
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded-xl border text-red-600"
-                      onClick={() => removeBlock(i)}
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-
-                {blk.type === "paragraph" ? (
-                  <textarea
-                    value={blk.text}
-                    onChange={(e) => updateParagraph(blk.id, e.target.value)}
-                    placeholder="Write paragraph..."
-                    rows={5}
-                    className="w-full rounded-xl border p-3 bg-white"
-                  />
-                ) : (
-                  <div className="grid gap-2">
-                    <img
-                      src={blk.src}
-                      alt={blk.alt || "image"}
-                      className="max-h-72 object-contain rounded-xl border"
-                    />
-                    <input
-                      value={blk.alt}
-                      onChange={(e) => updateImageAlt(blk.id, e.target.value)}
-                      placeholder="Alt text (optional)"
-                      className="w-full rounded-xl border p-2"
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-
-            <div className="flex flex-wrap gap-3 pt-2">
-              <button
-                onClick={addParagraph}
-                className="px-4 py-2 rounded-2xl bg-black text-white shadow"
-              >
-                + Paragraph
-              </button>
-              <button
-                onClick={handlePickImage}
-                className="px-4 py-2 rounded-2xl bg-black text-white shadow"
-              >
-                + Image
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) addImageFromFile(f);
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }}
-              />
-            </div>
-
-            {/* Questions Editor (Admin) */}
-            <QuestionsEditor
-              questions={questions}
-              updatePrompt={updateQuestionPrompt}
-              updateClosedOption={updateClosedOption}
-              setClosedCorrect={setClosedCorrect}
-              addOpen={addOpenQuestion}
-              addClosed={addClosedQuestion}
-              removeQuestion={removeQuestion}
-            />
-          </div>
-        ) : (
-          <>
-            <article className="prose prose-neutral max-w-none bg-white rounded-2xl p-6 shadow mt-4">
-              {blocks.map((blk) => (
-                <div key={blk.id}>
-                  {blk.type === "paragraph" ? (
-                    <p className="whitespace-pre-wrap leading-7">{blk.text}</p>
-                  ) : (
-                    <figure className="my-6">
-                      <img src={blk.src} alt={blk.alt || "image"} />
-                      {blk.alt && (
-                        <figcaption className="text-sm text-neutral-600">
-                          {blk.alt}
-                        </figcaption>
-                      )}
-                    </figure>
-                  )}
-                </div>
-              ))}
-            </article>
-
-            {/* Student (Preview) */}
-            <section className="bg-white rounded-2xl p-6 shadow mt-6">
-              <h3 className="text-xl font-semibold mb-4">Savollar</h3>
-              <StudentQuestionsView questions={questions} />
-            </section>
-          </>
-        )}
       </div>
     </div>
   );
 }
 
-function QuestionsEditor({
-  questions,
-  updatePrompt,
-  updateClosedOption,
-  setClosedCorrect,
-  addOpen,
-  addClosed,
-  removeQuestion,
-}: {
+/**
+ * Matn (Passage) va Savollar yaratish uchun asosiy komponent.
+ */
+function PassageForm() {
+  const [title, setTitle] = useState<string>("");
+  const [mainImageSrc, setMainImageSrc] = useState<string | undefined>(
+    undefined
+  );
+  const [content, setContent] = useState<string>("");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [preview, setPreview] = useState<boolean>(false);
+  const [modalMessage, setModalMessage] = useState<string>("");
+  const [grade, setGrade] = useState<Grade | "">("");
+  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // ----- Rasm boshqaruvi -----
+
+  const handleImageUpload = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const src = String(e.target?.result || "");
+      setMainImageSrc(src);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handlePickImage = useCallback(() => fileInputRef.current?.click(), []);
+  const removeImage = useCallback(() => setMainImageSrc(undefined), []);
+
+  // ----- Savollar boshqaruvi -----
+
+  const addOpenQuestion = useCallback(
+    () =>
+      setQuestions((q) => [
+        ...q,
+        {
+          id: generateId(),
+          kind: "open",
+          prompt: "Ochiq savol matnini kiriting",
+          expectedAnswer: "",
+        },
+      ]),
+    []
+  );
+
+  const addClosedQuestion = useCallback(
+    () =>
+      setQuestions((q) => [
+        ...q,
+        {
+          id: generateId(),
+          kind: "closed",
+          prompt: "Yopiq savol matnini kiriting (To'g'ri javobni tanlang)",
+          options: ["Variant A", "Variant B", "Variant C"],
+          correctIndex: 0,
+        },
+      ]),
+    []
+  );
+
+  const updateQuestionPrompt = useCallback(
+    (id: string, prompt: string) =>
+      setQuestions((qs) =>
+        qs.map((qq) => (qq.id === id ? { ...qq, prompt } : qq))
+      ),
+    []
+  );
+
+  const updateOpenAnswer = useCallback(
+    (id: string, answer: string) =>
+      setQuestions((qs) =>
+        qs.map((qq) =>
+          qq.id === id && qq.kind === "open"
+            ? { ...qq, expectedAnswer: answer }
+            : qq
+        )
+      ),
+    []
+  );
+
+  const updateClosedOption = useCallback(
+    (id: string, index: 0 | 1 | 2, value: string) =>
+      setQuestions((qs) =>
+        qs.map((qq) =>
+          qq.id === id && qq.kind === "closed"
+            ? {
+                ...qq,
+                options: qq.options.map((o, i) =>
+                  i === index ? value : o
+                ) as [string, string, string],
+              }
+            : qq
+        )
+      ),
+    []
+  );
+
+  const setClosedCorrect = useCallback(
+    (id: string, idx: number) =>
+      setQuestions((qs) =>
+        qs.map((qq) =>
+          qq.id === id && qq.kind === "closed"
+            ? { ...qq, correctIndex: idx }
+            : qq
+        )
+      ),
+    []
+  );
+
+  const removeQuestion = useCallback(
+    (id: string) => setQuestions((q) => q.filter((qq) => qq.id !== id)),
+    []
+  );
+
+  // ----- Saqlash Logic -----
+  const handleCreate = useCallback(async () => {
+    if (!title.trim()) {
+      setModalMessage("Iltimos, matn sarlavhasini kiriting.");
+      return;
+    }
+
+    if (!grade) {
+      setModalMessage("Iltimos, matn sinfini tanlang.");
+      return;
+    }
+
+    if (!content.trim()) {
+      setModalMessage("Iltimos, matn mazmunini kiriting.");
+      return;
+    }
+
+    const selectedGrade = grade as Grade;
+
+    const data: PassageData = {
+      title,
+      mainImageSrc,
+      content,
+      questions,
+      grade: selectedGrade,
+      time: 40,
+    };
+
+    try {
+      setIsCreating(true);
+      await createPassage(data);
+      setModalMessage("Matn muvaffaqiyatli saqlandi!");
+      toast.success("Matn muvaffaqiyatli saqlandi!");
+      router.push("/admin/passages");
+    } catch (err) {
+      console.error(err);
+      setModalMessage("Saqlashda xatolik yuz berdi. Qayta urinib ko‘ring.");
+    } finally {
+      setIsCreating(false);
+    }
+  }, [title, mainImageSrc, content, questions, grade, router]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans antialiased">
+      <div className="max-w-4xl mx-auto px-4 py-8 sm:py-12">
+        {/* Header and Actions */}
+        <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 border-b border-gray-200 mb-8">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 flex items-center gap-3 mb-4 sm:mb-0">
+            <BookOpen className="w-6 h-6 sm:w-8 sm:h-8 text-blue-500" /> Yangi
+            matn
+          </h1>
+          <div className="flex gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => setPreview((p) => !p)}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full bg-white text-gray-700 cursor-pointer hover:bg-gray-100 shadow-md transition w-1/2 sm:w-auto justify-center"
+            >
+              {preview ? (
+                <Pencil className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+              {preview ? "Tahrirlash" : "Ko'rib chiqish"}
+            </button>
+            <Button
+              onClick={handleCreate}
+              disabled={isCreating}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-full text-white shadow-md transition cursor-pointer w-1/2 sm:w-auto justify-center"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" /> Saqlash
+                </>
+              )}
+            </Button>
+          </div>
+        </header>
+
+        {/* Content Area */}
+        {preview ? (
+          <PreviewView
+            title={title}
+            mainImageSrc={mainImageSrc}
+            content={content}
+            grade={grade}
+            questions={questions}
+            setModalMessage={setModalMessage}
+          />
+        ) : (
+          <EditorView
+            title={title}
+            setTitle={setTitle}
+            mainImageSrc={mainImageSrc}
+            setMainImageSrc={setMainImageSrc}
+            content={content}
+            setContent={setContent}
+            grade={grade}
+            setGrade={setGrade}
+            handlePickImage={handlePickImage}
+            handleImageUpload={handleImageUpload}
+            removeImage={removeImage}
+            fileInputRef={fileInputRef}
+            questions={questions}
+            addOpenQuestion={addOpenQuestion}
+            addClosedQuestion={addClosedQuestion}
+            updateQuestionPrompt={updateQuestionPrompt}
+            updateOpenAnswer={updateOpenAnswer}
+            updateClosedOption={updateClosedOption}
+            setClosedCorrect={setClosedCorrect}
+            removeQuestion={removeQuestion}
+          />
+        )}
+      </div>
+      <SimpleModal
+        message={modalMessage}
+        onClose={() => setModalMessage("")}
+        icon={<ClipboardCheck className="w-10 h-10" />}
+      />
+    </div>
+  );
+}
+
+// ----- Editor Components -----
+
+interface EditorViewProps {
+  title: string;
+  setTitle: (t: string) => void;
+  mainImageSrc?: string;
+  setMainImageSrc: (s: string | undefined) => void;
+  content: string;
+  setContent: (c: string) => void;
+  grade: Grade | "";
+  setGrade: (grade: Grade | "") => void;
+  handlePickImage: () => void;
+  handleImageUpload: (file: File) => void;
+  removeImage: () => void;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  questions: Question[];
+  addOpenQuestion: () => void;
+  addClosedQuestion: () => void;
+  updateQuestionPrompt: (id: string, prompt: string) => void;
+  updateOpenAnswer: (id: string, answer: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
+  setClosedCorrect: (id: string, idx: number) => void;
+  removeQuestion: (id: string) => void;
+}
+
+function EditorView(props: EditorViewProps) {
+  const {
+    title,
+    setTitle,
+    mainImageSrc,
+    removeImage,
+    handlePickImage,
+    handleImageUpload,
+    fileInputRef,
+    content,
+    setContent,
+    grade,
+    setGrade,
+    questions,
+    addOpenQuestion,
+    addClosedQuestion,
+    updateQuestionPrompt,
+    updateOpenAnswer,
+    updateClosedOption,
+    setClosedCorrect,
+    removeQuestion,
+  } = props;
+
+  return (
+    <div className="space-y-8">
+      {/* Sarlavha & Rasm */}
+      <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
+          1. Matn Sarlavhasi va Asosiy Rasm
+        </h2>
+
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Matn sarlavhasi (Masalan: Dushman pyesi)"
+          className="w-full rounded-xl border border-gray-300 p-3 text-lg font-medium mb-4 focus:ring-blue-500 focus:border-blue-500 transition"
+        />
+
+        {/* Image Upload/Preview */}
+        <div className="p-2 border border-dashed border-gray-300 rounded-xl ">
+          {mainImageSrc ? (
+            <div className="relative">
+              {/* Replaced Next.js Image with standard img tag */}
+              <Image
+                width={500}
+                height={400}
+                src={mainImageSrc}
+                alt="Matn rasmi"
+                className="max-h-72 object-contain rounded-lg w-full mb-3 "
+                onError={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.onerror = null;
+                  img.src =
+                    "https://placehold.co/600x400/eeeeee/333333?text=Rasm+yuklanmadi";
+                }}
+              />
+              <button
+                onClick={removeImage}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white hover:bg-red-600 transition shadow-md"
+                title="Rasmni o'chirish"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handlePickImage}
+              className="w-full flex flex-col items-center justify-center p-8 text-gray-500 hover:text-blue-600 transition"
+            >
+              <Upload className="w-8 h-8 mb-2" />
+              <span className="font-medium">Asosiy Rasmni yuklang</span>
+              <span className="text-sm">(Faqat bitta rasm mumkin)</span>
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) handleImageUpload(f);
+              if (fileInputRef.current) fileInputRef.current.value = "";
+            }}
+          />
+        </div>
+      </section>
+
+      {/* Matn Kontenti */}
+      <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
+          2. Matn Kontenti
+        </h2>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          placeholder="Matnning barcha mazmunini shu yerga kiriting..."
+          rows={12} // Katta Textarea
+          className="w-full rounded-xl border border-gray-300 p-4 bg-white text-base leading-relaxed focus:ring-blue-500 focus:border-blue-500 transition"
+        />
+      </section>
+
+      {/* Matn sinfi */}
+
+      <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold mb-4 text-gray-700 border-b pb-2">
+          3. Matn sinfi
+        </h2>
+        <select
+          value={grade}
+          onChange={(e) => setGrade(e.target.value as Grade)}
+          className="block w-1/3 px-3 py-2.5 bg-neutral-secondary-medium border border-default-medium text-heading text-sm rounded-lg focus:ring-brand focus:border-brand shadow-xs placeholder:text-body"
+        >
+          <option disabled value="">
+            Sinfni tanlang
+          </option>
+          <option value="GRADE_3">3-sinf</option>
+          <option value="GRADE_4">4-sinf</option>
+        </select>
+      </section>
+
+      {/* Savollar Editor */}
+      <QuestionsEditor
+        questions={questions}
+        updatePrompt={updateQuestionPrompt}
+        updateOpenAnswer={updateOpenAnswer}
+        updateClosedOption={updateClosedOption}
+        setClosedCorrect={setClosedCorrect}
+        addOpen={addOpenQuestion}
+        addClosed={addClosedQuestion}
+        removeQuestion={removeQuestion}
+      />
+    </div>
+  );
+}
+
+// ----- Questions Editor Component (Admin) -----
+
+interface QuestionsEditorProps {
   questions: Question[];
   updatePrompt: (id: string, prompt: string) => void;
-  updateClosedOption: (id: string, index: 0 | 1 | 2 | 3, value: string) => void;
+  updateOpenAnswer: (id: string, answer: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
   setClosedCorrect: (id: string, idx: number) => void;
   addOpen: () => void;
   addClosed: () => void;
-  removeQuestion: (index: number) => void;
-}) {
+  removeQuestion: (id: string) => void;
+}
+
+function QuestionsEditor(props: QuestionsEditorProps) {
+  const {
+    questions,
+    updatePrompt,
+    updateOpenAnswer,
+    updateClosedOption,
+    setClosedCorrect,
+    addOpen,
+    addClosed,
+    removeQuestion,
+  } = props;
   return (
-    <section className="bg-white rounded-2xl p-6 shadow mt-8">
-      <div className="flex items-center justify-between">
-        <h3 className="text-xl font-semibold">Savollar (Admin)</h3>
-        <div className="flex gap-2">
+    <section className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between flex-wrap gap-4 border-b pb-3 mb-4">
+        <h3 className="text-xl font-semibold text-gray-700 flex items-center gap-2">
+          <ListOrdered className="w-5 h-5 text-blue-600" /> 4. Savollarni
+          tahrirlash
+        </h3>
+        <div className="flex gap-3 w-full sm:w-auto">
           <button
             onClick={addOpen}
-            className="px-3 py-2 rounded-2xl bg-neutral-900 text-white"
+            className="flex items-center gap-1 px-3 py-2 text-sm rounded-full bg-blue-600 text-white hover:bg-blue-700 transition shadow-md w-1/2 sm:w-auto justify-center"
           >
-            + Ochiq savol
+            <MessageSquare className="w-4 h-4" /> Ochiq savol
           </button>
           <button
             onClick={addClosed}
-            className="px-3 py-2 rounded-2xl bg-neutral-900 text-white"
+            className="flex items-center gap-1 px-3 py-2 text-sm rounded-full bg-green-600 text-white hover:bg-green-700 transition shadow-md w-1/2 sm:w-auto justify-center"
           >
-            + Yopiq savol (4 variant)
+            <CheckCircle className="w-4 h-4" /> Yopiq savol
           </button>
         </div>
       </div>
 
-      <div className="mt-4 space-y-4">
+      <div className="mt-6 space-y-4">
         {questions.length === 0 && (
-          <p className="text-sm text-neutral-600">
-            Hali savollar qo&apos;shilmagan.
+          <p className="text-sm text-gray-500 italic p-4 border border-dashed rounded-lg text-center">
+            Hali savollar qo‘shilmagan. Yuqoridagi tugmalardan birini bosing.
           </p>
         )}
 
         {questions.map((q, idx) => (
-          <div key={q.id} className="border rounded-2xl p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div className="text-sm text-neutral-500">
-                Q{idx + 1} · {q.kind === "open" ? "Ochiq" : "Yopiq"}
-              </div>
-              <button
-                onClick={() => removeQuestion(idx)}
-                className="px-2 py-1 rounded-xl border text-red-600"
-              >
-                Delete
-              </button>
-            </div>
-
-            <input
-              value={q.prompt}
-              onChange={(e) => updatePrompt(q.id, e.target.value)}
-              placeholder="Savol matni"
-              className="w-full mt-3 rounded-xl border p-2"
-            />
-
-            {q.kind === "closed" && (
-              <div className="grid md:grid-cols-2 gap-3 mt-3">
-                {q.options.map((opt, i) => (
-                  <div key={i} className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name={`correct-$${q.id}`}
-                      checked={(q as ClosedQuestion).correctIndex === i}
-                      onChange={() => setClosedCorrect(q.id, i)}
-                    />
-                    <input
-                      value={opt}
-                      onChange={(e) =>
-                        updateClosedOption(
-                          q.id,
-                          i as 0 | 1 | 2 | 3,
-                          e.target.value
-                        )
-                      }
-                      placeholder={`Variant $${i + 1}`}
-                      className="flex-1 rounded-xl border p-2"
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <QuestionCard
+            key={q.id}
+            question={q}
+            index={idx}
+            updatePrompt={updatePrompt}
+            updateOpenAnswer={updateOpenAnswer}
+            updateClosedOption={updateClosedOption}
+            setClosedCorrect={setClosedCorrect}
+            removeQuestion={removeQuestion}
+          />
         ))}
       </div>
     </section>
   );
 }
 
-function StudentQuestionsView({ questions }: { questions: Question[] }) {
+// ----- Question Card Component -----
+
+interface QuestionCardProps {
+  question: Question;
+  index: number;
+  updatePrompt: (id: string, prompt: string) => void;
+  updateOpenAnswer: (id: string, answer: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
+  setClosedCorrect: (id: string, idx: number) => void;
+  removeQuestion: (id: string) => void;
+}
+
+function QuestionCard(props: QuestionCardProps) {
+  const {
+    question,
+    index,
+    updatePrompt,
+    updateOpenAnswer,
+    updateClosedOption,
+    setClosedCorrect,
+    removeQuestion,
+  } = props;
+  const isClosed = question.kind === "closed";
+  const color = isClosed ? "border-green-500" : "border-blue-500";
+  const bgColor = isClosed ? "bg-green-50" : "bg-blue-50";
+
+  return (
+    <div
+      className={`border-l-4 ${color} ${bgColor} rounded-xl p-4 shadow-sm transition hover:shadow-md`}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          {isClosed ? (
+            <CheckCircle className="w-5 h-5 text-green-700" />
+          ) : (
+            <MessageSquare className="w-5 h-5 text-blue-700" />
+          )}
+          <span className="text-sm font-bold text-gray-700">
+            {index + 1}-Savol ({" "}
+            {isClosed ? "Yopiq (Test)" : "Ochiq (Matn kiritish)"} )
+          </span>
+        </div>
+        <button
+          onClick={() => removeQuestion(question.id)}
+          className="p-1 rounded-full text-red-600 hover:bg-red-200 transition"
+          title="Savolni o'chirish"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+
+      <textarea
+        value={question.prompt}
+        onChange={(e) => updatePrompt(question.id, e.target.value)}
+        placeholder="Savol matnini kiriting..."
+        rows={2}
+        className="w-full rounded-lg border border-gray-300 p-2 text-base focus:ring-blue-500 focus:border-blue-500 transition"
+      />
+
+      {/* Ochiq savol uchun javob maydoni (Kutilayotgan javob) */}
+      {question.kind === "open" && (
+        <div className="mt-3 p-3 bg-blue-100 rounded-lg border border-blue-400">
+          <label className="block text-sm font-bold text-blue-700 mb-1">
+            Kutilayotgan javob (Tekshirish uchun)
+          </label>
+          <textarea
+            value={(question as OpenQuestion).expectedAnswer}
+            onChange={(e) => updateOpenAnswer(question.id, e.target.value)}
+            placeholder="To'g'ri bo'lishi kutilayotgan javobni kiriting..."
+            rows={3}
+            className="w-full rounded-lg border border-blue-300 p-2 text-sm focus:ring-blue-500 focus:border-blue-500 transition"
+          />
+        </div>
+      )}
+
+      {/* Yopiq savol variantlari */}
+      {isClosed && (
+        <div className="grid gap-3 mt-4">
+          {(question as ClosedQuestion).options.map((opt, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input
+                type="radio"
+                name={`correct-${question.id}`}
+                checked={(question as ClosedQuestion).correctIndex === i}
+                onChange={() => setClosedCorrect(question.id, i)}
+                className="form-radio text-green-600 w-5 h-5"
+                title="To'g'ri javobni belgilash"
+              />
+              <input
+                value={opt}
+                onChange={(e) =>
+                  updateClosedOption(
+                    question.id,
+                    i as 0 | 1 | 2,
+                    e.target.value
+                  )
+                }
+                placeholder={`Variant ${["A", "B", "C"][i]}`}
+                className={`flex-1 rounded-lg border p-2 text-sm ${
+                  (question as ClosedQuestion).correctIndex === i
+                    ? "bg-green-100 border-green-500 shadow-sm"
+                    : "border-gray-300"
+                } focus:ring-blue-500 focus:border-blue-500 transition`}
+              />
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ----- Preview Components (Student View) -----
+
+interface PreviewViewProps {
+  title: string;
+  mainImageSrc?: string;
+  content: string;
+  grade: Grade | "";
+  questions: Question[];
+  setModalMessage: (msg: string) => void;
+}
+
+function PreviewView(props: PreviewViewProps) {
+  const { title, mainImageSrc, grade, content, questions } = props;
+
+  // Simple state to hold student answers for the demo
   const [answers, setAnswers] = useState<
     Record<string, string | number | undefined>
   >({});
 
   return (
+    // Single Section Container (Now white/clean style)
+    <div className="bg-white p-6 sm:p-8 rounded-lg  border border-gray-200 space-y-5 max-w-4xl mx-auto font-sans">
+      {/* Passage Header */}
+      <header className="text-center border-gray-300">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+          {title || "Sarlavhasiz matn"}
+        </h2>
+
+        <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mt-1">
+          <GraduationCap className="h-4 w-4 text-primary" />
+          <span className="text-sm font-medium text-primary">
+            {grade === "GRADE_3"
+              ? "3-sinf"
+              : grade === "GRADE_4"
+              ? "4-sinf"
+              : "?-sinf"}
+          </span>
+        </div>
+      </header>
+
+      {/* Rasm */}
+      {mainImageSrc && (
+        <div className="flex justify-center my-6">
+          <div className="w-full  p-2 bg-white  border-gray-200">
+            <Image
+              width={500}
+              height={400}
+              src={mainImageSrc}
+              alt="Matnning asosiy rasmi"
+              className="max-h-80 w-full object-cover rounded-md"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.onerror = null;
+                // Updated placeholder color scheme for clean white background
+                img.src =
+                  "https://placehold.co/600x400/eeeeee/333333?text=Rasm+Mavjud+Emas";
+              }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Passage Content Preview */}
+      <article className="text-gray-800 text-lg">
+        {content ? (
+          <p className="whitespace-pre-wrap indent-8 text-justify">{content}</p>
+        ) : (
+          <p className="text-gray-500 italic text-center">
+            Matn mazmuni bo‘sh. Avval tahrirlash rejimida mazmun kiriting.
+          </p>
+        )}
+      </article>
+
+      {/* Student Questions View (Seamlessly integrated) */}
+      <section className="pt-6 border-t border-gray-300">
+        <h3 className="text-2xl font-bold mb-6 text-gray-700 text-center">
+          Sinov savollari
+        </h3>
+        <StudentQuestionsView
+          questions={questions}
+          answers={answers}
+          setAnswers={setAnswers}
+        />
+      </section>
+    </div>
+  );
+}
+
+interface StudentQuestionsViewProps {
+  questions: Question[];
+  answers: Record<string, string | number | undefined>;
+  setAnswers: React.Dispatch<
+    React.SetStateAction<Record<string, string | number | undefined>>
+  >;
+}
+
+function StudentQuestionsView(props: StudentQuestionsViewProps) {
+  const { questions, answers, setAnswers } = props;
+
+  return (
     <div className="space-y-6">
       {questions.length === 0 && (
-        <p className="text-sm text-neutral-600">Savollar mavjud emas.</p>
+        <p className="text-base text-gray-500 italic text-center p-4 border border-dashed rounded-xl">
+          Bu matn uchun savollar mavjud emas.
+        </p>
       )}
 
       {questions.map((q, idx) => (
-        <div key={q.id} className="border rounded-2xl p-4">
-          <p className="font-medium">
-            Q{idx + 1}. {q.prompt}
+        <div
+          key={q.id}
+          className="bg-white  rounded-xl p-5 shadow-md  transition duration-300"
+        >
+          <p className="font-bold text-lg text-gray-800 mb-3">
+            <span className="text-blue-600 font-extrabold mr-2">
+              {idx + 1}.
+            </span>{" "}
+            {q.prompt}
           </p>
 
           {q.kind === "open" ? (
             <textarea
               placeholder="Javobingizni yozing..."
-              rows={4}
-              className="w-full mt-3 rounded-xl border p-3"
+              rows={3}
+              className="w-full  rounded-lg border border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 transition text-base"
               value={(answers[q.id] as string) || ""}
               onChange={(e) =>
                 setAnswers((a) => ({ ...a, [q.id]: e.target.value }))
               }
             />
           ) : (
-            <div className="mt-3 grid md:grid-cols-2 gap-2">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {(q as ClosedQuestion).options.map((opt, i) => (
                 <label
                   key={i}
-                  className="flex items-center gap-2 border rounded-xl p-2"
+                  className={`flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition shadow-sm ${
+                    answers[q.id] === i
+                      ? "bg-indigo-100 border-blue-600 shadow-inner"
+                      : "bg-white hover:bg-gray-50 border-gray-300"
+                  }`}
                 >
                   <input
                     type="radio"
-                    name={`student-$${q.id}`}
+                    name={`student-${q.id}`}
                     checked={answers[q.id] === i}
                     onChange={() => setAnswers((a) => ({ ...a, [q.id]: i }))}
+                    className="form-radio text-blue-600 w-5 h-5"
                   />
-                  <span>{opt}</span>
+                  <span className="text-gray-800 font-medium text-base">
+                    {opt}
+                  </span>
                 </label>
               ))}
             </div>
           )}
         </div>
       ))}
-
-      {questions.length > 0 && (
-        <button
-          onClick={() => alert("Javoblar saqlandi (demo).")}
-          className="px-4 py-2 rounded-2xl bg-neutral-900 text-white"
-        >
-          Javoblarni topshirish
-        </button>
-      )}
     </div>
   );
 }
+
+export default PassageForm;

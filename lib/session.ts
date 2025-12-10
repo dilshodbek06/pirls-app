@@ -6,8 +6,12 @@ import { cookies } from "next/headers";
 export type User = {
   id: string;
   email: string;
-  role: "ADMIN" | "USER" | "GUEST";
+  role: "ADMIN" | "USER" | "GUEST" | "TEACHER";
   isLoggedIn: boolean;
+  fullName: string;
+  province: string;
+  region: string;
+  schoolName: string;
 };
 
 // Define the session data structure
@@ -17,7 +21,15 @@ export interface SessionData {
 
 export const sessionOptions: SessionOptions = {
   cookieName: "my_nextjs_session",
-  password: process.env.SECRET_COOKIE_PASSWORD as string, // Must be 32 chars
+  password: (() => {
+    const secret = process.env.SECRET_COOKIE_PASSWORD;
+    if (!secret || secret.length < 32) {
+      throw new Error(
+        "SECRET_COOKIE_PASSWORD env is missing or shorter than 32 characters."
+      );
+    }
+    return secret;
+  })(),
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24, // 1 day

@@ -153,7 +153,7 @@ const Awards = () => {
                           variant="outline"
                           className="capitalize text-xs md:text-sm"
                         >
-                          {passage.difficulty}
+                          {passage.content}
                         </Badge>
                       </div>
                     </div>

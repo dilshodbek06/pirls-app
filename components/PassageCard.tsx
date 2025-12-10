@@ -2,17 +2,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Passage } from "@/mock/passagesData";
+import { FullPassage } from "@/types";
 
 interface PassageCardProps {
-  passage: Passage;
+  passage: FullPassage;
 }
 
 const PassageCard = ({ passage }: PassageCardProps) => {
-  const difficultyColors = {
-    Easy: "bg-accent/10 text-accent border-accent/20",
-    Medium: "bg-secondary/10 text-secondary border-secondary/20",
-    Hard: "bg-destructive/10 text-destructive border-destructive/20",
+  const difficultyLevels = {
+    GRADE_3: "bg-accent/10 text-accent border-accent/20",
+    GRADE_4: "bg-secondary/10 text-secondary border-secondary/20",
   };
 
   return (
@@ -22,11 +21,12 @@ const PassageCard = ({ passage }: PassageCardProps) => {
           <div className="rounded-lg bg-linear-to-br from-primary/10 to-accent/10 p-3">
             <BookOpen className="h-5 w-5 text-primary" />
           </div>
-          <Badge
-            variant="outline"
-            className={difficultyColors[passage.difficulty]}
-          >
-            {passage.difficulty}
+          <Badge variant="outline" className={difficultyLevels[passage.grade]}>
+            {passage.grade === "GRADE_3"
+              ? "3-sinf"
+              : passage.grade === "GRADE_4"
+              ? "4-sinf"
+              : ""}
           </Badge>
         </div>
       </div>
@@ -36,12 +36,12 @@ const PassageCard = ({ passage }: PassageCardProps) => {
       </h3>
 
       <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-        {passage.preview}
+        {passage.content}
       </p>
 
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">
-          {passage.questions.length} Questions
+          {passage.questions.length} savol
         </span>
         <Link href={`/passages/${passage.id}`}>
           <Button variant="ghost" size="sm">

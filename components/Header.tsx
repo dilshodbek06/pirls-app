@@ -7,6 +7,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useUser } from "@/hooks/use-user";
 import { UserAvatarDropdown } from "@/components/UserAvatarDropdown";
+import { logoutAction } from "@/actions/auth";
+import { clearUserCache } from "@/hooks/use-user";
 
 const Header = () => {
   const location = usePathname();
@@ -121,13 +123,16 @@ const Header = () => {
                   >
                     Teacher Cabinet
                   </Link>
-                  <Link
-                    href="/api/auth/logout"
-                    onClick={() => setMenuOpen(false)}
-                    className="block text-center text-sm font-semibold text-red-400 hover:text-red-300 transition-colors bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg"
+                  <button
+                    onClick={async () => {
+                      setMenuOpen(false);
+                      clearUserCache();
+                      await logoutAction();
+                    }}
+                    className="block w-full text-center text-sm font-semibold text-red-400 hover:text-red-300 transition-colors bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg"
                   >
                     Logout
-                  </Link>
+                  </button>
                 </>
               ) : (
                 <Link

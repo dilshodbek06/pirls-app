@@ -4,20 +4,8 @@ import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import Header from "@/components/Header";
+import { Card, CardContent } from "@/components/ui/card";
 import Footer from "@/components/Footer";
-import { UserPlus } from "lucide-react";
-import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
-
-// ⬇️ shadcn/ui Select
 import {
   Select,
   SelectContent,
@@ -25,134 +13,200 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Building2,
+  GraduationCap,
+  Lock,
+  Mail,
+  MapPin,
+  User,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { registerPupil } from "@/actions/auth";
 import { DISTRICTS, REGIONS } from "@/mock/auth";
+import toast from "react-hot-toast";
 
 type FormData = {
   fullName: string;
   age: string;
+  province: string;
+  district: string;
   schoolName: string;
-  region: string; // viloyat
-  district: string; // tuman
+  email: string;
+  password: string;
 };
 
 const Register = () => {
   const router = useRouter();
-
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     age: "",
-    schoolName: "",
-    region: "",
+    province: "",
     district: "",
+    schoolName: "",
+    email: "",
+    password: "",
   });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Tanlangan viloyatga mos tumanlar
   const districtOptions = useMemo(() => {
-    return formData.region
-      ? DISTRICTS[formData.region as keyof typeof DISTRICTS]
+    return formData.province
+      ? DISTRICTS[formData.province as keyof typeof DISTRICTS]
       : [];
-  }, [formData.region]);
+  }, [formData.province]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (field: keyof FormData, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+      ...(field === "province" ? { district: "" } : {}),
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     if (
       !formData.fullName ||
       !formData.age ||
+      !formData.province ||
+      !formData.district ||
       !formData.schoolName ||
-      !formData.region ||
-      !formData.district
+      !formData.email ||
+      !formData.password
     ) {
-      toast("Iltimos majburiy maydonlarni to'ldiring", {
-        position: "top-right",
-      });
+      setError("Barcha maydonlar talab etiladi");
+      setIsLoading(false);
       return;
     }
 
-    localStorage.setItem("pirlsUser", JSON.stringify(formData));
+    const ageNum = Number.parseInt(formData.age, 10);
+    if (Number.isNaN(ageNum) || ageNum < 6 || ageNum > 20) {
+      setError("Yosh 6 dan 20 gacha bo'lishi kerak");
+      setIsLoading(false);
+      return;
+    }
 
-    setTimeout(() => {
-      router.push("/passages");
-    }, 1000);
-  };
+    // Validate school name format (e.g., "45-maktab")
+    const schoolNamePattern = /^\d+-/;
+    if (!schoolNamePattern.test(formData.schoolName.trim())) {
+      setError(
+        'Maktab nomi raqam bilan boshlanishi kerak (masalan: "45-maktab")'
+      );
+      setIsLoading(false);
+      return;
+    }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
+    try {
+      const formDataObj = new FormData();
+      formDataObj.append("email", formData.email);
+      formDataObj.append("password", formData.password);
+      formDataObj.append("fullName", formData.fullName);
+      formDataObj.append("age", formData.age);
+      formDataObj.append("province", formData.province);
+      formDataObj.append("region", formData.district);
+      formDataObj.append("schoolName", formData.schoolName);
 
-  // Select uchun yordamchi setterlar
-  const setRegion = (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      region: value,
-      district: "", // viloyat o‘zgarsa, tumanni tozalaymiz
-    }));
-  };
-  const setDistrict = (value: string) => {
-    setFormData((prev) => ({ ...prev, district: value }));
+      const result = await registerPupil(formDataObj);
+
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        toast.success("Ro'yxatdan muvaffaqiyatli o'tdingiz!");
+        router.push("/passages");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Ro'yhatdan o'tishda xatolik yuz berdi. Qayta urinib ko'ring.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="bg-linear-to-r px-4 from-cyan-500 to-green-500">
-        <Header />
-      </div>
-
-      <main className="flex-1 py-12 px-4">
-        <div className="container mx-auto max-w-md">
-          <Card className="animate-fade-in-up shadow-md">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 rounded-full bg-linear-to-br from-primary to-accent flex items-center justify-center mb-4">
-                <UserPlus className="h-8 w-8 text-primary-foreground" />
+      <main className="flex-1 container mx-auto px-4 py-8 md:py-16">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8 md:mb-6 animate-fade-in">
+            <div className="flex justify-center mb-4">
+              <div className="p-4 bg-primary/10 rounded-full">
+                <GraduationCap className="h-12 w-12 md:h-16 md:w-16 text-primary" />
               </div>
-              <CardTitle className="text-2xl">
-                PIRLS EDU ga qo&apos;shiling
-              </CardTitle>
-              <CardDescription>
-                Shaxsiy hisob yarating va o‘quv safaringizni boshlang.
-              </CardDescription>
-            </CardHeader>
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3">
+              O‘quvchi Kabineti
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg">
+              Matnlarni ko‘rish va o‘quv safaringizni davom ettirish uchun
+              ro‘yxatdan o‘ting.
+            </p>
+          </div>
+
+          <Card className="animate-fade-in" style={{ animationDelay: "100ms" }}>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">To‘liq ism</Label>
-                  <Input
-                    className="bg-background"
-                    id="fullName"
-                    name="fullName"
-                    placeholder="To‘liq ismingizni kiriting..."
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="age">Yosh</Label>
-                  <Input
-                    className="bg-background"
-                    id="age"
-                    name="age"
-                    type="number"
-                    placeholder="Yoshingizni kiriting..."
-                    value={formData.age}
-                    onChange={handleChange}
-                    min="1"
-                    max="20"
-                    required
-                  />
-                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2 md:col-span-2">
+                    <Label
+                      htmlFor="fullName"
+                      className="flex items-center gap-2"
+                    >
+                      <User className="h-4 w-4 text-primary" />
+                      To‘liq ism
+                    </Label>
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="To‘liq ismingizni kiriting..."
+                      value={formData.fullName}
+                      onChange={(e) => handleChange("fullName", e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
 
-                <div className="flex flex-col md:flex-row gap-3 items-center">
-                  {/* Viloyat (region) */}
-                  <div className="space-y-2 w-full">
-                    <Label>Viloyat</Label>
-                    <Select value={formData.region} onValueChange={setRegion}>
-                      <SelectTrigger className="bg-background w-full">
-                        <SelectValue placeholder="Viloyatni tanlang..." />
+                  <div className="space-y-2">
+                    <Label htmlFor="age">Yosh</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      placeholder="Yoshingizni kiriting..."
+                      value={formData.age}
+                      onChange={(e) => handleChange("age", e.target.value)}
+                      min={6}
+                      max={20}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="province"
+                      className="flex items-center gap-2"
+                    >
+                      <MapPin className="h-4 w-4 text-primary" />
+                      Viloyat
+                    </Label>
+                    <Select
+                      value={formData.province}
+                      onValueChange={(value) => handleChange("province", value)}
+                      required
+                      disabled={isLoading}
+                    >
+                      <SelectTrigger className="h-11 w-full">
+                        <SelectValue placeholder="Viloyatingizni tanlang" />
                       </SelectTrigger>
                       <SelectContent>
                         {REGIONS.map((r) => (
@@ -164,16 +218,28 @@ const Register = () => {
                     </Select>
                   </div>
 
-                  {/* Tuman (district) — viloyat tanlanganda aktiv bo‘ladi */}
-                  <div className="space-y-2 w-full">
-                    <Label>Tuman</Label>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="district"
+                      className="flex items-center gap-2"
+                    >
+                      <MapPin className="h-4 w-4 text-primary" />
+                      Tuman/Shahar
+                    </Label>
                     <Select
                       value={formData.district}
-                      onValueChange={setDistrict}
-                      disabled={!formData.region}
+                      onValueChange={(value) => handleChange("district", value)}
+                      disabled={!formData.province || isLoading}
+                      required
                     >
-                      <SelectTrigger className="bg-background w-full">
-                        <SelectValue placeholder="Tumanni tanlang..." />
+                      <SelectTrigger className="h-11 w-full">
+                        <SelectValue
+                          placeholder={
+                            formData.province
+                              ? "Tumanni tanlang"
+                              : "Avval viloyatni tanlang"
+                          }
+                        />
                       </SelectTrigger>
                       <SelectContent>
                         {districtOptions.map((d) => (
@@ -184,30 +250,81 @@ const Register = () => {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="schoolName"
+                      className="flex items-center gap-2"
+                    >
+                      <Building2 className="h-4 w-4 text-primary" />
+                      Maktab nomi
+                    </Label>
+                    <Input
+                      id="schoolName"
+                      type="text"
+                      placeholder="Maktab nomini kiriting... (45-maktab)"
+                      value={formData.schoolName}
+                      onChange={(e) =>
+                        handleChange("schoolName", e.target.value)
+                      }
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      <Mail className="h-4 w-4 text-primary" />
+                      Email
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="Email manzilingizni kiriting..."
+                      value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="flex items-center gap-2"
+                    >
+                      <Lock className="h-4 w-4 text-primary" />
+                      Parol
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Parol o'ylab toping..."
+                      value={formData.password}
+                      onChange={(e) => handleChange("password", e.target.value)}
+                      className="h-11"
+                      required
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
 
-                {/* School number */}
-                <div className="space-y-2">
-                  <Label htmlFor="schoolName">Maktab nomi</Label>
-                  <Input
-                    className="bg-background"
-                    id="schoolName"
-                    name="schoolName"
-                    placeholder="Maktabingiz nomini kiriting... (34-maktab)"
-                    value={formData.schoolName}
-                    onChange={handleChange}
-                    required
-                  />
+                <div className="pt-4">
+                  <Button
+                    type="submit"
+                    variant="hero"
+                    size="lg"
+                    className="w-full gap-2 hover:scale-[1.01]"
+                    disabled={isLoading}
+                  >
+                    <GraduationCap className="h-5 w-5" />
+                    {isLoading
+                      ? "Ro'yhatdan o'tilmoqda..."
+                      : "Ro'yxatdan o'tish"}
+                  </Button>
                 </div>
-
-                <Button
-                  type="submit"
-                  variant="hero"
-                  className="w-full hover:scale-[1.01]"
-                  size="lg"
-                >
-                  Qo‘shilish
-                </Button>
               </form>
             </CardContent>
           </Card>

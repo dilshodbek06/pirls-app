@@ -10,6 +10,17 @@ datasource db {
 enum Role {
   ADMIN
   TEACHER
+  USER
+}
+
+enum Grade {
+  GRADE_3
+  GRADE_4
+}
+
+enum QuestionType {
+  OPEN // Ochiq savol
+  CLOSED // Yopiq savol
 }
 
 model User {
@@ -22,6 +33,41 @@ model User {
   region     String
   schoolName String
   role       Role   @default(TEACHER)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  passages Passage[]
+}
+
+model Passage {
+  id       String  @id @default(cuid())
+  title    String
+  content  String
+  imageUrl String?
+  grade    Grade
+
+  teacherId String?
+  teacher   User?   @relation(fields: [teacherId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  questions Question[]
+}
+
+model Question {
+  id                 String       @id @default(cuid())
+  content            String
+  type               QuestionType
+  options            String[]
+  correctOptionIndex Int
+
+  // Ochiq savollar uchun (OPEN)
+  correctAnswer String?
+
+  passageId String
+  passage   Passage @relation(fields: [passageId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

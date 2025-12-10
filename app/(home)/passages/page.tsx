@@ -1,10 +1,14 @@
+import { getAllPassages } from "@/actions/passage";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PassageCard from "@/components/PassageCard";
 import { Library } from "lucide-react";
-import { passages } from "@/mock/passagesData";
 
-const Passages = () => {
+export const dynamic = "force-dynamic";
+
+const Passages = async () => {
+  const passages = await getAllPassages();
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="bg-linear-to-r px-4 from-cyan-500 to-green-500">
@@ -16,9 +20,7 @@ const Passages = () => {
           <div className="text-center mb-12 animate-fade-in">
             <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
               <Library className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">
-                Reading Library
-              </span>
+              <span className="text-sm font-medium text-primary">Matnlar</span>
             </div>
             <h1 className="text-4xl font-bold mb-4">Barcha matnlar</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -26,16 +28,22 @@ const Passages = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {passages.map((passage, index) => (
-              <div
-                key={passage.id}
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <PassageCard passage={passage} />
-              </div>
-            ))}
-          </div>
+          {passages.length ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {passages.map((passage, index) => (
+                <div
+                  key={passage.id}
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <PassageCard passage={passage} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-gray-600">
+              Hali matnlar qoo‘shilmagan
+            </div>
+          )}
         </div>
       </main>
 

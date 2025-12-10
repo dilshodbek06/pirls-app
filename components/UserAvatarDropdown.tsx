@@ -56,13 +56,13 @@ export function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <Link href="/admin/passages" className="w-full">
+        <Link href="/teacher/dashboard" className="w-full">
           <DropdownMenuItem className="cursor-pointer hover:text-black! hover:bg-gray-200/70!">
             <UserCircle className="mr-2 h-4 w-4 " />
             <span>Mening kabinetim</span>
           </DropdownMenuItem>
         </Link>
-        <Link href="/admin/passages" className="w-full">
+        <Link href="/teacher/results" className="w-full">
           <DropdownMenuItem className="cursor-pointer hover:text-black! hover:bg-gray-200/70!">
             <ClipboardCheck className="mr-2 h-4 w-4 " />
             <span>Natijalar</span>

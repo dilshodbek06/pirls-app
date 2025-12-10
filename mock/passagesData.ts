@@ -1,219 +1,160 @@
-export interface Question {
-  id: string;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
+import { FullPassage } from "@/types";
 
-export interface Passage {
-  id: string;
-  title: string;
-  preview: string;
-  difficulty: "Easy" | "Medium" | "Hard";
-  fullText: string;
-  questions: Question[];
-}
-
-export const passages: Passage[] = [
+export const passages: FullPassage[] = [
+  // --- PASSAGE 1: Simple Machines (GRADE_3) ---
   {
-    id: "1",
-    title: "The Amazing Dolphins",
-    preview:
-      "Discover the incredible world of dolphins and their remarkable intelligence...",
-    difficulty: "Easy",
-    fullText: `Dolphins are among the most intelligent animals on Earth. These marine mammals are known for their playful behavior and remarkable communication skills. Dolphins live in groups called pods and work together to hunt for fish.
+    id: "p_1_machines",
+    title: "Understanding Simple Machines",
+    content: `A simple machine is a device that changes the direction or magnitude of a force. They make work easier! There are six basic types of simple machines.
 
-One of the most fascinating things about dolphins is their ability to use echolocation. This means they can find objects by making clicking sounds and listening to the echoes that bounce back. It's like having a built-in sonar system!
+The **lever** is a rigid bar that rests on a pivot point called a fulcrum. Think of a seesaw.
 
-Dolphins are also very social creatures. They play together, help each other when injured, and even have unique whistles that work like names. Scientists believe dolphins can recognize themselves in mirrors, which shows they have self-awareness.
+The **wheel and axle** is a wheel attached to a smaller rod (axle) that helps things roll and move heavy objects. Think of a bicycle wheel.
 
-These amazing animals can swim at speeds up to 20 miles per hour and dive as deep as 1,000 feet. They need to come to the surface to breathe air, just like us. A dolphin's brain is actually larger than a human's brain!`,
+The **pulley** is a wheel with a groove that holds a rope, used to lift heavy things, like lifting a flag up a flagpole. Simple machines are everywhere!`,
+    imageUrl: "/images/hero-bg2.jpg",
+    grade: "GRADE_3",
+    teacherId: "t_grade3_a",
+    createdAt: new Date("2024-01-10T08:00:00Z"),
+    updatedAt: new Date("2024-01-10T08:00:00Z"),
     questions: [
       {
-        id: "q1",
-        question: "What do dolphins use echolocation for?",
-        options: [
-          "To communicate with other dolphins",
-          "To find objects by listening to echoes",
-          "To play games",
-          "To sleep underwater",
-        ],
-        correctAnswer: 1,
+        id: "q1_1",
+        content: "What is the pivot point on a lever called?",
+        type: "CLOSED",
+        options: ["Axle", "Fulcrum", "Pulley"],
+        correctOptionIndex: 1,
+        correctAnswer: null, // CLOSED question
+        passageId: "p_1_machines",
+        createdAt: new Date("2024-01-10T08:05:00Z"),
+        updatedAt: new Date("2024-01-10T08:05:00Z"),
       },
       {
-        id: "q2",
-        question: "What is a group of dolphins called?",
-        options: ["A school", "A pod", "A herd", "A pack"],
-        correctAnswer: 1,
-      },
-      {
-        id: "q3",
-        question: "How fast can dolphins swim?",
-        options: [
-          "Up to 10 mph",
-          "Up to 15 mph",
-          "Up to 20 mph",
-          "Up to 30 mph",
-        ],
-        correctAnswer: 2,
+        id: "q1_2",
+        content: "Name one type of simple machine mentioned in the passage.",
+        type: "OPEN",
+        options: [],
+        correctOptionIndex: -1,
+        correctAnswer: "Lever, Wheel and Axle, or Pulley.", // OPEN question
+        passageId: "p_1_machines",
+        createdAt: new Date("2024-01-10T08:06:00Z"),
+        updatedAt: new Date("2024-01-10T08:06:00Z"),
       },
     ],
   },
+
+  // --- PASSAGE 2: Plant Needs (GRADE_3) ---
   {
-    id: "2",
-    title: "The Journey of a Raindrop",
-    preview:
-      "Follow the incredible adventure of a single raindrop through the water cycle...",
-    difficulty: "Medium",
-    fullText: `Have you ever wondered where rain comes from? Every raindrop has an amazing journey through what scientists call the water cycle.
+    id: "p_2_plants",
+    title: "What Do Plants Need to Grow?",
+    content: `Just like people and animals, plants need certain things to survive and grow big and strong. The three most important things for a plant are **water**, **sunlight**, and **nutrients** from the soil.
 
-It all begins when the sun heats up water in oceans, lakes, and rivers. The heat causes the water to evaporate, turning it into water vapor—an invisible gas that rises into the sky. This process is called evaporation.
-
-As the water vapor rises higher into the atmosphere, it cools down. When it gets cold enough, the water vapor condenses into tiny water droplets that form clouds. Millions and millions of these tiny droplets come together to create the fluffy clouds we see in the sky.
-
-When the droplets in a cloud become too heavy, they fall back to Earth as precipitation—rain, snow, sleet, or hail, depending on the temperature. Some of this water flows into streams and rivers, eventually making its way back to the ocean. Some soaks into the ground, where plants can use it. And some evaporates again, continuing the endless cycle.
-
-This water cycle has been happening for billions of years, recycling the same water over and over again. The water you drink today might have once been part of a dinosaur's drinking water millions of years ago!`,
+Water helps carry food throughout the plant. Sunlight gives the plant the energy it needs to make its own food in a process called photosynthesis. Nutrients act like vitamins, helping the plant build strong roots and green leaves. If a plant is missing one of these three things, it will not grow well.`,
+    imageUrl: "/images/hero-bg2.jpg",
+    grade: "GRADE_3",
+    teacherId: "t_grade3_a",
+    createdAt: new Date("2024-01-12T09:15:00Z"),
+    updatedAt: new Date("2024-01-12T09:15:00Z"),
     questions: [
       {
-        id: "q1",
-        question: "What causes water to evaporate?",
-        options: [
-          "The moon's gravity",
-          "The wind blowing",
-          "Heat from the sun",
-          "Cold temperatures",
-        ],
-        correctAnswer: 2,
-      },
-      {
-        id: "q2",
-        question: "What happens to water vapor when it rises and cools?",
-        options: [
-          "It freezes immediately",
-          "It disappears completely",
-          "It condenses into water droplets",
-          "It becomes heavier",
-        ],
-        correctAnswer: 2,
-      },
-      {
-        id: "q3",
-        question:
-          "According to the passage, what is true about the water we drink today?",
-        options: [
-          "It is completely new water",
-          "It might have existed millions of years ago",
-          "It came from space",
-          "It was created last year",
-        ],
-        correctAnswer: 1,
+        id: "q2_1",
+        content:
+          "What process allows plants to make their own food using sunlight?",
+        type: "CLOSED",
+        options: ["Evaporation", "Respiration", "Photosynthesis"],
+        correctOptionIndex: 2,
+        correctAnswer: null,
+        passageId: "p_2_plants",
+        createdAt: new Date("2024-01-12T09:20:00Z"),
+        updatedAt: new Date("2024-01-12T09:20:00Z"),
       },
     ],
   },
+
+  // --- PASSAGE 3: US Government Branches (GRADE_4) ---
   {
-    id: "3",
-    title: "Ancient Egyptian Pyramids",
-    preview:
-      "Explore the mysteries and engineering marvels of the Egyptian pyramids...",
-    difficulty: "Hard",
-    fullText: `The pyramids of ancient Egypt stand as some of the most impressive architectural achievements in human history. Built over 4,500 years ago, these massive stone structures were created as tombs for pharaohs and their families.
+    id: "p_3_govt",
+    title: "Three Branches of US Government",
+    content: `The government of the United States is divided into three main parts, or branches, to ensure no single group becomes too powerful. This system is called checks and balances.
 
-The Great Pyramid of Giza, built for Pharaoh Khufu, is the largest of all Egyptian pyramids. It originally stood 481 feet tall and was the tallest human-made structure in the world for over 3,800 years. The pyramid contains approximately 2.3 million stone blocks, each weighing between 2.5 and 15 tons.
+The **Legislative Branch** (Congress) makes the laws.
+The **Executive Branch** (President) carries out the laws.
+The **Judicial Branch** (Supreme Court) interprets the laws and makes sure they are fair.
 
-One of the greatest mysteries surrounding the pyramids is how ancient Egyptians managed to build them with such precision using only simple tools. They didn't have modern machinery, computers, or even wheels for construction. Current theories suggest they used ramps, levers, and thousands of workers to move and position the massive stones.
-
-The pyramids were not built by slaves, as many people believe. Recent archaeological evidence shows they were constructed by paid laborers who lived in nearby workers' villages. These workers received regular wages, medical care, and were given proper burials—showing they were valued members of society.
-
-Inside the pyramids, elaborate passageways lead to burial chambers decorated with hieroglyphics—the ancient Egyptian writing system. These writings provide valuable information about Egyptian religious beliefs, daily life, and history. The pyramids were designed to help pharaohs reach the afterlife, which was central to ancient Egyptian religion.
-
-Today, the pyramids continue to fascinate people worldwide. They remind us of human ingenuity, determination, and the desire to create something that will last forever. Despite centuries of study, the pyramids still hold many secrets waiting to be discovered.`,
+Each branch has its own responsibilities, and they all work together to run the country.`,
+    imageUrl: "/images/hero-bg2.jpg",
+    grade: "GRADE_4",
+    teacherId: "t_grade4_b",
+    createdAt: new Date("2024-01-15T11:45:00Z"),
+    updatedAt: new Date("2024-01-15T11:45:00Z"),
     questions: [
       {
-        id: "q1",
-        question:
-          "How tall was the Great Pyramid of Giza when it was first built?",
-        options: ["381 feet", "431 feet", "481 feet", "531 feet"],
-        correctAnswer: 2,
+        id: "q3_1",
+        content: "What is the job of the Executive Branch?",
+        type: "CLOSED",
+        options: ["To make laws", "To carry out laws", "To interpret laws"],
+        correctOptionIndex: 1,
+        correctAnswer: null,
+        passageId: "p_3_govt",
+        createdAt: new Date("2024-01-15T11:50:00Z"),
+        updatedAt: new Date("2024-01-15T11:50:00Z"),
       },
       {
-        id: "q2",
-        question: "According to the passage, who built the pyramids?",
-        options: [
-          "Slaves who were forced to work",
-          "Paid laborers who were valued workers",
-          "Foreign workers from other countries",
-          "Robots and advanced technology",
-        ],
-        correctAnswer: 1,
-      },
-      {
-        id: "q3",
-        question: "What was the main purpose of building the pyramids?",
-        options: [
-          "To show off Egypt's wealth",
-          "To serve as tombs and help pharaohs reach the afterlife",
-          "To store grain during famines",
-          "To serve as military fortresses",
-        ],
-        correctAnswer: 1,
-      },
-      {
-        id: "q4",
-        question: "What do hieroglyphics provide us with today?",
-        options: [
-          "Instructions for building pyramids",
-          "Maps to hidden treasure",
-          "Information about Egyptian beliefs and history",
-          "Recipes for ancient Egyptian food",
-        ],
-        correctAnswer: 2,
+        id: "q3_2",
+        content:
+          "What is the name of the system used to prevent one branch from becoming too powerful?",
+        type: "OPEN",
+        options: [],
+        correctOptionIndex: -1,
+        correctAnswer: "Checks and balances.",
+        passageId: "p_3_govt",
+        createdAt: new Date("2024-01-15T11:51:00Z"),
+        updatedAt: new Date("2024-01-15T11:51:00Z"),
       },
     ],
   },
+
+  // --- PASSAGE 4: Ancient Rome (GRADE_4) ---
   {
-    id: "4",
-    title: "The Life of Bees",
-    preview:
-      "Learn about the fascinating social structure and importance of honeybees...",
-    difficulty: "Easy",
-    fullText: `Honeybees are incredible insects that play a vital role in our world. These small creatures live together in large groups called colonies, where each bee has a specific job to do.
+    id: "p_4_rome",
+    title: "Life in Ancient Rome",
+    content: `Ancient Rome was one of the most powerful civilizations in history. It began as a small town in Italy and grew into a huge empire that controlled much of Europe, North Africa, and the Middle East.
 
-In every bee colony, there are three types of bees: the queen, the workers, and the drones. The queen bee is the largest bee in the hive and her main job is to lay eggs—sometimes up to 2,000 eggs per day! There is only one queen in each colony.
+Romans were skilled builders. They constructed strong roads that helped their armies and trade move quickly. They also built impressive aqueducts, which were channels used to bring fresh water from the hills into the cities for drinking and public baths.
 
-Worker bees are all female and do most of the work in the hive. Some workers collect nectar and pollen from flowers, which they bring back to make honey. Other workers build the honeycomb, clean the hive, or guard the entrance. Worker bees even fan their wings to keep the hive cool on hot days!
-
-Drones are male bees whose only job is to mate with the queen. They don't collect nectar or help with any work in the hive.
-
-Bees are essential for pollination. When a bee visits a flower to collect nectar, pollen sticks to its fuzzy body. When the bee flies to another flower, some of this pollen rubs off, helping plants create seeds and fruit. Without bees, many of the fruits and vegetables we eat wouldn't exist!`,
+The city of Rome was a busy place with public forums, temples, and large stadiums like the Colosseum, where people watched gladiator fights and other entertainment.`,
+    imageUrl: "/images/hero-bg2.jpg",
+    grade: "GRADE_4",
+    teacherId: "t_grade4_b",
+    createdAt: new Date("2024-01-20T14:20:00Z"),
+    updatedAt: new Date("2024-01-20T14:20:00Z"),
     questions: [
       {
-        id: "q1",
-        question: "What is the main job of the queen bee?",
+        id: "q4_1",
+        content: "What were aqueducts used for in ancient Rome?",
+        type: "CLOSED",
         options: [
-          "To collect nectar",
-          "To guard the hive",
-          "To lay eggs",
-          "To make honey",
+          "To hold gladiator fights",
+          "To bring fresh water into cities",
+          "To build roads quickly",
         ],
-        correctAnswer: 2,
+        correctOptionIndex: 1,
+        correctAnswer: null,
+        passageId: "p_4_rome",
+        createdAt: new Date("2024-01-20T14:25:00Z"),
+        updatedAt: new Date("2024-01-20T14:25:00Z"),
       },
       {
-        id: "q2",
-        question: "Which type of bee does most of the work in the hive?",
-        options: ["Queen bees", "Worker bees", "Drones", "Baby bees"],
-        correctAnswer: 1,
-      },
-      {
-        id: "q3",
-        question: "Why are bees important for plants?",
-        options: [
-          "They eat harmful insects",
-          "They water the plants",
-          "They help with pollination",
-          "They protect plants from wind",
-        ],
-        correctAnswer: 2,
+        id: "q4_2",
+        content: "Describe two things Romans built that helped their society.",
+        type: "OPEN",
+        options: [],
+        correctOptionIndex: -1,
+        correctAnswer:
+          "Strong roads (helped with army/trade) and impressive aqueducts (brought fresh water).",
+        passageId: "p_4_rome",
+        createdAt: new Date("2024-01-20T14:26:00Z"),
+        updatedAt: new Date("2024-01-20T14:26:00Z"),
       },
     ],
   },

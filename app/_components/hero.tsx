@@ -1,10 +1,34 @@
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
+import { getUser } from "@/lib/user-server";
 import { BookOpen, Target } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-const Hero = () => {
+const ROUTE_BY_ROLE: Record<string, string> = {
+  TEACHER: "/teacher/dashboard",
+  USER: "/passages",
+  ADMIN: "/admin/dashboard", // agar kerak bo'lsa
+  GUEST: "/auth/register",
+};
+
+const Hero = async () => {
+  // getUser xatosiz chaqiriladi — xatoda guest holat qaytadi
+  const { isLoggedIn, role } = await getUser().catch(() => ({
+    isLoggedIn: false,
+    role: "GUEST",
+  }));
+
+  console.log(role);
+
+  // CTA manzili — ro'l bo'yicha xaritadan yoki defaultga tushadi
+  const ctaHref =
+    isLoggedIn && role && ROUTE_BY_ROLE[role]
+      ? ROUTE_BY_ROLE[role]
+      : isLoggedIn
+      ? "/passages" // agar rol noma'lum bo'lsa, logged-in user uchun default
+      : ROUTE_BY_ROLE["GUEST"];
+
   return (
     <div>
       <section className="relative min-h-screen flex flex-col px-4 overflow-hidden">
@@ -13,8 +37,9 @@ const Hero = () => {
             src={"/images/hero-bg2.jpg"}
             alt="Children studying together"
             className="w-full h-full object-cover"
-            width={400}
-            height={400}
+            width={1920}
+            height={1080}
+            priority={true}
           />
           <div className="absolute inset-0 bg-linear-to-br from-primary/85 via-accent/75 to-secondary/85" />
         </div>
@@ -41,7 +66,7 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/auth/register">
+              <Link href={ctaHref} aria-label="Boshlash">
                 <Button
                   size="lg"
                   className="text-lg px-8 py-6 bg-white text-primary hover:bg-white/90 shadow-lg"
@@ -50,7 +75,8 @@ const Hero = () => {
                   <BookOpen className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/passages">
+
+              <Link href="/passages" aria-label="Matnlar ro'yxati">
                 <Button
                   size="lg"
                   className="text-lg px-8 py-6 bg-white/10 text-white border-2 border-white/30 hover:bg-white/20 backdrop-blur-sm shadow-lg"
