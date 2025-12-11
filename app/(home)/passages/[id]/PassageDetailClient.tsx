@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Award, CheckCircle, Download, XCircle } from "lucide-react";
+import { ArrowLeft, Award, Clock, Download, Loader2 } from "lucide-react";
+import { gradePassageAnswers } from "@/actions/quiz";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { FullPassage } from "@/types";
+import type { FullPassage, QuestionEvaluationResult } from "@/types";
 import type { Question } from "@/lib/generated/prisma/client";
 import toast from "react-hot-toast";
 
@@ -54,25 +55,18 @@ const QuestionCard = ({
   answers: AnswerState;
   showResults: boolean;
   handleAnswerChange: (questionId: string, answer: number | string) => void;
+  evaluation?: QuestionEvaluationResult;
 }) => {
   const answerValue = answers[question.id];
 
-  // Helper to determine the item class
+  // Helper to determine the item class (no per-question correct/incorrect colors)
   const getItemClass = (oIndex: number) => {
     const isSelected = answerValue === oIndex;
-    const isCorrect = question.correctOptionIndex === oIndex;
     const baseClass =
       "flex items-center space-x-3 p-3 rounded-lg transition-colors border";
 
-    if (showResults) {
-      if (isCorrect) return `${baseClass} bg-green-100/50 border-green-500`;
-      if (isSelected && !isCorrect)
-        return `${baseClass} bg-red-100/50 border-red-500`;
-      return `${baseClass} border-gray-200`; // Unselected wrong options
-    } else {
-      if (isSelected) return `${baseClass} border-blue-400 bg-blue-50`;
-      return `${baseClass} hover:bg-gray-50 cursor-pointer border-gray-200`;
-    }
+    if (isSelected) return `${baseClass} border-blue-400 bg-blue-50`;
+    return `${baseClass} hover:bg-gray-50 cursor-pointer border-gray-200`;
   };
 
   return (
@@ -91,13 +85,11 @@ const QuestionCard = ({
             onValueChange={(value) =>
               handleAnswerChange(question.id, parseInt(value))
             }
-            disabled={showResults}
+            disabled={showResults} // lock answers after submit
             className="space-y-1"
           >
             {question.options.map((option, oIndex) => {
               const id = `${question.id}-${oIndex}`;
-              const isSelected = answerValue === oIndex;
-              const isCorrect = question.correctOptionIndex === oIndex;
 
               return (
                 <div
@@ -118,16 +110,6 @@ const QuestionCard = ({
                   >
                     {option}
                   </Label>
-                  {showResults && (
-                    <>
-                      {isCorrect && (
-                        <CheckCircle className="h-5 w-5 text-green-600 shrink-0" />
-                      )}
-                      {isSelected && !isCorrect && (
-                        <XCircle className="h-5 w-5 text-red-600 shrink-0" />
-                      )}
-                    </>
-                  )}
                 </div>
               );
             })}
@@ -136,21 +118,24 @@ const QuestionCard = ({
 
         {/* OPEN Question Type (Textarea) */}
         {question.type === "OPEN" && (
-          <Textarea
-            placeholder="Javobingizni shu yerga yozing..."
-            value={(answerValue as string) || ""}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-            disabled={showResults}
-            rows={4}
-            className="focus-visible:ring-blue-500"
-          />
+          <>
+            <Textarea
+              placeholder="Javobingizni shu yerga yozing..."
+              value={(answerValue as string) || ""}
+              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+              disabled={showResults} // lock answers after submit
+              rows={4}
+              className="focus-visible:ring-blue-500"
+            />
+            {/* no per-question evaluation text */}
+          </>
         )}
       </CardContent>
     </Card>
   );
 };
 
-// --- NEW Helper Component: Combined Result/Certificate Modal ---
+// --- Result / Certificate Modal ---
 const ResultModal = ({
   isOpen,
   onClose,
@@ -239,20 +224,71 @@ const ResultModal = ({
   );
 };
 
+// --- Time Out Modal ---
+const TimeOutModal = ({
+  isOpen,
+  onClose,
+  onRetry,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onRetry: () => void;
+}) => (
+  <Dialog open={isOpen} onOpenChange={onClose}>
+    <DialogContent className="sm:max-w-[360px] text-center p-8">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-red-600">
+          ⏰ OOPS, your time is gone!
+        </DialogTitle>
+      </DialogHeader>
+
+      <p className="text-gray-600 mt-2">Try again?</p>
+
+      <DialogFooter className="mt-6 flex flex-col gap-3">
+        <Button
+          onClick={() => {
+            onRetry();
+            onClose();
+          }}
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          Try Again
+        </Button>
+
+        <Link href="/passages" className="w-full">
+          <Button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800">
+            Exit
+          </Button>
+        </Link>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
+);
+
 type PassageDetailClientProps = {
   passage: FullPassage;
 };
 
 const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
+  const TOTAL_TIME = 40 * 60; // total time in seconds
   const router = useRouter();
   const { user, isLoggedIn, isLoading } = useUser();
   const [answers, setAnswers] = useState<AnswerState>({});
-  const [showResults, setShowResults] = useState(false); // Still used for question card display
+  const [showResults, setShowResults] = useState(false); // used to lock questions after submit
   const [score, setScore] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false); // NEW STATE for Modal
+  const [questionResults, setQuestionResults] = useState<
+    Record<string, QuestionEvaluationResult>
+  >({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // result modal
+  const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
+  const [isTimeOutModalOpen, setIsTimeOutModalOpen] = useState(false); // time out modal
+  const [timerKey, setTimerKey] = useState(0); // to restart timer on reset
+  const [isTimerRunning, setIsTimerRunning] = useState(true); // NEW: control timer
 
   const closedQuestions = passage.questions.filter((q) => q.type === "CLOSED");
-  const totalClosedQuestions = closedQuestions.length;
+  const openQuestions = passage.questions.filter((q) => q.type === "OPEN");
+  const totalClosedQuestions = closedQuestions.length + openQuestions.length;
   const scorePercentage =
     totalClosedQuestions > 0 ? (score / totalClosedQuestions) * 100 : 0;
   const showCertificate = scorePercentage >= 80;
@@ -267,9 +303,9 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     }));
   };
 
-  const handleSubmit = () => {
+  const gradeQuiz = useCallback(async () => {
     if (isLoading) {
-      alert("Foydalanuvchi ma'lumotlari yuklanmoqda, biroz kuting.");
+      toast.error("Foydalanuvchi ma'lumotlari yuklanmoqda, biroz kuting.");
       return;
     }
 
@@ -286,32 +322,108 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       return;
     }
 
-    const answeredClosedQuestionsCount = closedQuestions.filter(
-      (q) => answers[q.id] !== undefined
-    ).length;
+    const hasUnanswered = passage.questions.some((question) => {
+      const value = answers[question.id];
+      if (question.type === "OPEN") {
+        return typeof value !== "string" || value.trim().length === 0;
+      }
+      return value === undefined;
+    });
 
-    // Check if all CLOSED questions are answered
-    if (answeredClosedQuestionsCount < totalClosedQuestions) {
+    if (hasUnanswered) {
       toast.error("Iltimos, barcha savollarga javob bering.");
       return;
     }
 
-    let correctCount = 0;
-    closedQuestions.forEach((question) => {
-      if (answers[question.id] === question.correctOptionIndex) {
-        correctCount++;
-      }
-    });
+    // ✅ All good: stop the timer once user actually submits
+    setIsTimerRunning(false);
 
-    setScore(correctCount);
-    setShowResults(true); // Update for QuestionCard styling
-    setIsModalOpen(true); // OPEN THE RESULT MODAL
+    try {
+      setIsSubmitting(true);
+      const result = await gradePassageAnswers({
+        passageId: passage.id,
+        answers,
+      });
+
+      const mappedResults = result.results.reduce((acc, item) => {
+        acc[item.questionId] = item;
+        return acc;
+      }, {} as Record<string, QuestionEvaluationResult>);
+
+      setQuestionResults(mappedResults);
+      setScore(result.score);
+      setShowResults(true); // just to lock inputs, not to show per-question correctness
+      setIsModalOpen(true);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Javoblarni tekshirishda xatolik yuz berdi.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [
+    answers,
+    isLoggedIn,
+    isLoading,
+    passage.id,
+    passage.questions,
+    router,
+    user,
+  ]);
+
+  const handleSubmit = () => {
+    // Only allow submit while there is time
+    if (timeLeft === 0 || isSubmitting) return;
+    void gradeQuiz();
   };
+
+  // Timer countdown — restarts when timerKey changes, and only runs if isTimerRunning
+  useEffect(() => {
+    if (!isTimerRunning) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timerKey, isTimerRunning]);
+
+  // When time is over, just show modal, don't grade
+  useEffect(() => {
+    if (timeLeft === 0 && !showResults) {
+      setIsTimeOutModalOpen(true);
+      setIsTimerRunning(false);
+    }
+  }, [timeLeft, showResults]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const secs = (seconds % 60).toString().padStart(2, "0");
+    return `${mins}:${secs}`;
+  };
+
+  const timeProgress = Math.max(0, (timeLeft / TOTAL_TIME) * 100);
+  const isTimeLow = timeLeft <= 5 * 60;
 
   const resetQuiz = () => {
     setAnswers({});
     setShowResults(false);
     setScore(0);
+    setQuestionResults({});
+    setIsSubmitting(false);
+    setTimeLeft(TOTAL_TIME);
+    setTimerKey((prev) => prev + 1); // restart timer
+    setIsTimerRunning(true); // NEW: restart timer
   };
 
   const handleDownloadCertificate = useCallback(() => {
@@ -351,7 +463,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       // Student name - Dynamic value
       ctx.fillStyle = "#1F2937"; // Tailwind: gray-800
       ctx.font = "bold 40px Arial";
-      ctx.fillText(studentName, 400, 250); // FIX: Using dynamic studentName
+      ctx.fillText(studentName, 400, 250);
 
       // Achievement text
       ctx.fillStyle = "#4B5563";
@@ -414,7 +526,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
           </Link>
 
           {/* Combined Passage and Tests Section */}
-          <Card className="p-6 md:p-10 shadow-md animate-fade-in  ">
+          <Card className="p-6 md:p-10 shadow-md animate-fade-in">
             {/* --- Passage Header --- */}
             <div className="flex items-start justify-between gap-3 mb-6 border-b pb-4">
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight">
@@ -450,9 +562,38 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
             </div>
 
             {/* --- Questions/Tests --- */}
-            <h2 className="text-2xl text-center font-bold text-gray-800">
-              Matn bo‘yicha testlar
-            </h2>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
+              <h2 className="text-2xl font-bold text-gray-800">
+                Matn bo‘yicha testlar
+              </h2>
+              <div className="w-full fixed bottom-3 left-1/2 -translate-x-1/2 md:w-auto flex flex-col gap-2">
+                <div
+                  className={`flex items-center justify-between rounded-xl border px-4 py-2 shadow-sm ${
+                    isTimeLow
+                      ? "border-red-300 bg-red-50 text-red-700"
+                      : "border-blue-200 bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  <div className="flex items-center gap-2 font-semibold">
+                    <Clock className="h-4 w-4" />
+                    Vaqt
+                  </div>
+                  <span className="text-lg ml-2 font-bold tabular-nums">
+                    {formatTime(timeLeft)}
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${
+                      isTimeLow
+                        ? "bg-linear-to-r from-orange-400 to-red-500"
+                        : "bg-linear-to-r from-green-500 via-blue-500 to-indigo-500"
+                    }`}
+                    style={{ width: `${timeProgress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-6">
               {passage.questions.map((question, qIndex) => (
@@ -463,20 +604,38 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
                   answers={answers}
                   showResults={showResults}
                   handleAnswerChange={handleAnswerChange}
+                  evaluation={questionResults[question.id]}
                 />
               ))}
             </div>
 
             {/* --- Submission Section --- */}
             <div className="mt-10 pt-6 border-t space-y-4">
-              <Button
-                onClick={handleSubmit}
-                variant="default"
-                size="lg"
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform hover:scale-[1.01]"
-              >
-                Javoblarni yuborish
-              </Button>
+              {timeLeft === 0 ? (
+                <Button
+                  disabled
+                  className="w-full bg-gray-300 text-gray-600 cursor-not-allowed"
+                >
+                  Time is over
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmit}
+                  variant="default"
+                  size="lg"
+                  disabled={isSubmitting}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white shadow-xl transition-transform hover:scale-[1.01] disabled:opacity-70"
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Tekshirilmoqda...
+                    </span>
+                  ) : (
+                    "Javoblarni yuborish"
+                  )}
+                </Button>
+              )}
             </div>
           </Card>
         </div>
@@ -498,6 +657,12 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
           onResetQuiz={resetQuiz}
         />
       )}
+
+      <TimeOutModal
+        isOpen={isTimeOutModalOpen}
+        onClose={() => setIsTimeOutModalOpen(false)}
+        onRetry={resetQuiz}
+      />
     </div>
   );
 };

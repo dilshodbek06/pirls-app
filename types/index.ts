@@ -6,6 +6,21 @@ import type {
 
 export type FullPassage = Passage & { questions: PrismaQuestion[] };
 
+export type AnswerMap = Record<string, number | string>;
+
+export type QuestionEvaluationResult = {
+  questionId: string;
+  isCorrect: boolean;
+  feedback?: string;
+  type: PrismaQuestion["type"];
+};
+
+export type GradePassageResult = {
+  score: number;
+  totalClosed: number;
+  results: QuestionEvaluationResult[];
+};
+
 type QuestionCommon = { id: string; prompt: string };
 
 export type OpenQuestion = QuestionCommon & {

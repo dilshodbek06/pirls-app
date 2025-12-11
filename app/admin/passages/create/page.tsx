@@ -28,7 +28,7 @@ import type {
 } from "@/types";
 import toast from "react-hot-toast";
 
-// Utility to generate a simple unique ID (replaces uuid)
+// Utility to generate a simple unique ID
 const generateId = () =>
   Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
 

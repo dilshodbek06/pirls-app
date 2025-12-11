@@ -1,7 +1,11 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useUser } from "@/hooks/use-user";
 import Link from "next/link";
 
 const Cta = () => {
+  const { user } = useUser();
   return (
     <div>
       <section className="py-20 px-4">
@@ -14,7 +18,7 @@ const Cta = () => {
               Minglab o‘quvchilar qatori siz ham <b>PIRLS EDU</b> bilan o‘qish
               ko‘nikmalaringizni rivojlantiring.
             </p>
-            <Link href="/auth/register">
+            <Link href={user ? "/passages" : "/auth/login"}>
               <Button
                 size="lg"
                 variant="secondary"

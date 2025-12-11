@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { loginPupil } from "@/actions/auth";
+import toast from "react-hot-toast";
 
 const PupilLogin = () => {
   const router = useRouter();
@@ -50,6 +51,7 @@ const PupilLogin = () => {
         setError(result.error);
       } else {
         router.push("/passages");
+        toast.success("Tizimga muvaffaqiyatli kirdingiz");
       }
     } catch (err) {
       setError("Login vaqti xatolik yuz berdi. Qayta urinib ko'ring.");

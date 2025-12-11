@@ -1,6 +1,16 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { BookOpen, Users, Target, Sparkles } from "lucide-react";
+import {
+  BookOpen,
+  Users,
+  Target,
+  Sparkles,
+  BadgeCheck,
+  Code2,
+  Globe,
+  HeartHandshake,
+  Lightbulb,
+} from "lucide-react";
 
 const About = () => {
   return (
@@ -19,6 +29,68 @@ const About = () => {
           </div>
 
           <div className="space-y-12">
+            <section className="animate-fade-in-up">
+              <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center gap-6">
+                  <div className="relative w-32 h-32 rounded-2xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+                    A
+                    <div className="absolute -inset-1 rounded-3xl bg-primary/10 blur-2xl -z-10" />
+                  </div>
+                  <div className="flex-1 space-y-3">
+                    <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold w-fit">
+                      <BadgeCheck className="h-4 w-4" />
+                      Loyiha yaratuvchisi
+                    </p>
+                    <h2 className="text-2xl md:text-3xl font-bold">
+                      Aziza Amonova — magistr
+                    </h2>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Ilmiy izlanishlar va zamonaviy web texnologiyalarni
+                      birlashtirib, o‘quvchilarga ishonch bilan o‘qish va javob
+                      berishga yordam beradigan platformani yaratdi.
+                      Dilshodbekning maqsadi — ta’limda raqamli qulayliklar
+                      orqali har bir o‘quvchi uchun teng imkoniyat yaratish.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                      {[
+                        {
+                          icon: Code2,
+                          label: "Tech stack",
+                          value: "Next.js, Prisma, Postgres",
+                        },
+                        {
+                          icon: Lightbulb,
+                          label: "Ilhom",
+                          value: "Interaktiv savollar, gamifikatsiya",
+                        },
+                        {
+                          icon: Globe,
+                          label: "Missiya",
+                          value: "Har bir o‘quvchiga sifatli kontent",
+                        },
+                      ].map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <div
+                            key={item.label}
+                            className="rounded-xl border border-border bg-muted/30 px-4 py-3"
+                          >
+                            <div className="flex items-center gap-2 text-sm font-semibold">
+                              <Icon className="h-4 w-4 text-primary" />
+                              {item.label}
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {item.value}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
             <section className="animate-fade-in-up">
               <div className="bg-card rounded-xl p-8 border border-border">
                 <div className="flex items-start gap-4 mb-4">
@@ -135,7 +207,7 @@ const About = () => {
               className="animate-fade-in-up"
               style={{ animationDelay: "300ms" }}
             >
-              <div className="bg-linear-to-r from-primary to-accent rounded-xl p-8 text-center">
+              <div className="bg-linear-to-r from-primary to-accent rounded-xl p-8 text-center space-y-3">
                 <Sparkles className="h-12 w-12 text-primary-foreground mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-primary-foreground mb-2">
                   Bugunoq o‘qish safaringizni boshlang
@@ -144,6 +216,16 @@ const About = () => {
                   PIRLS EDU yordamida o‘qish ko‘nikmalarini rivojlantirayotgan
                   minglab o‘quvchilarga qo‘shiling
                 </p>
+                <div className="flex justify-center gap-4 pt-2 text-primary-foreground/90 text-sm">
+                  <div className="inline-flex items-center gap-2">
+                    <HeartHandshake className="h-4 w-4" />
+                    Hamkorlikka ochiq
+                  </div>
+                  <div className="inline-flex items-center gap-2">
+                    <Globe className="h-4 w-4" />
+                    Ta’limni dunyoga yoyish
+                  </div>
+                </div>
               </div>
             </section>
           </div>

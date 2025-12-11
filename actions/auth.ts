@@ -61,6 +61,7 @@ export async function loginAction(formData: FormData) {
   }
 }
 
+// pupil login
 export async function loginPupil(formData: FormData) {
   return loginAction(formData);
 }
@@ -72,6 +73,15 @@ export async function logoutAction() {
 
   // Redirect to home page after logout
   redirect("/auth/teacher-login");
+}
+
+// pupil logout
+export async function logoutPupil() {
+  const session = await getSession();
+  await session.destroy();
+
+  // Redirect to home page after logout
+  redirect("/auth/login");
 }
 
 // Teacher register
