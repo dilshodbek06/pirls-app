@@ -72,12 +72,12 @@ const Contact = () => {
             <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mb-4">
               <MessageSquare className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium text-primary">
-                Get in Touch
+                Biz bilan bog&apos;laning
               </span>
             </div>
-            <h1 className="text-4xl font-bold mb-4">Contact Us</h1>
+            <h1 className="text-4xl font-bold mb-4">Bog&apos;lanish</h1>
             <p className="text-lg text-muted-foreground">
-              Have questions? We&apos;d love to hear from you.
+              Savollaringiz bormi? Sizdan xabar kutamiz.
             </p>
           </div>
 
@@ -87,20 +87,20 @@ const Contact = () => {
                 <div className="w-12 h-12 rounded-lg bg-linear-to-br from-primary to-accent flex items-center justify-center mb-4">
                   <Send className="h-6 w-6 text-primary-foreground" />
                 </div>
-                <CardTitle>Send us a message</CardTitle>
+                <CardTitle>Bizga xabar yuboring</CardTitle>
                 <CardDescription>
-                  Fill out the form and we&apos;ll get back to you as soon as
-                  possible
+                  Formani to&apos;ldiring, imkon qadar tezda sizga javob
+                  beramiz
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
+                    <Label htmlFor="name">Ism *</Label>
                     <Input
                       id="name"
                       name="name"
-                      placeholder="Your name"
+                      placeholder="Ismingiz"
                       value={formData.name}
                       onChange={handleChange}
                       required
@@ -113,7 +113,7 @@ const Contact = () => {
                       id="email"
                       name="email"
                       type="email"
-                      placeholder="your.email@example.com"
+                      placeholder="emailingiz@example.com"
                       value={formData.email}
                       onChange={handleChange}
                       required
@@ -121,22 +121,22 @@ const Contact = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="subject">Subject</Label>
+                    <Label htmlFor="subject">Mavzu</Label>
                     <Input
                       id="subject"
                       name="subject"
-                      placeholder="What is this about?"
+                      placeholder="Bu nima haqida?"
                       value={formData.subject}
                       onChange={handleChange}
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="message">Message *</Label>
+                    <Label htmlFor="message">Xabar *</Label>
                     <Textarea
                       id="message"
                       name="message"
-                      placeholder="Tell us more..."
+                      placeholder="Batafsil yozib qoldiring..."
                       value={formData.message}
                       onChange={handleChange}
                       rows={5}
@@ -145,7 +145,7 @@ const Contact = () => {
                   </div>
 
                   <Button type="submit" variant="hero" className="w-full">
-                    Send Message
+                    Xabarni yuborish
                     <Send className="ml-2 h-4 w-4" />
                   </Button>
                 </form>
@@ -163,7 +163,7 @@ const Contact = () => {
                       <Mail className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-2">Email Us</h3>
+                      <h3 className="font-semibold mb-2">Bizga email yozing</h3>
                       <p className="text-sm text-muted-foreground">
                         support@pirlsedu.com
                       </p>
@@ -175,34 +175,34 @@ const Contact = () => {
               <Card>
                 <CardContent className="pt-6">
                   <h3 className="font-semibold mb-3">
-                    Frequently Asked Questions
+                    Tez-tez beriladigan savollar
                   </h3>
                   <div className="space-y-3 text-sm">
                     <div>
                       <p className="font-medium text-foreground mb-1">
-                        How do I get started?
+                        Qanday boshlash mumkin?
                       </p>
                       <p className="text-muted-foreground">
-                        Click on &quot;Start Learning&quot; to register and
-                        begin exploring our passages.
+                        Ro&apos;yxatdan o&apos;tish va matnlarni o&apos;rganish
+                        uchun &quot;Start Learning&quot; tugmasini bosing.
                       </p>
                     </div>
                     <div>
                       <p className="font-medium text-foreground mb-1">
-                        Is PIRLS EDU free?
+                        PIRLS EDU bepulmi?
                       </p>
                       <p className="text-muted-foreground">
-                        Yes! All our reading passages and questions are
-                        available for free.
+                        Ha! Barcha o&apos;qish matnlari va savollar bepul.
                       </p>
                     </div>
                     <div>
                       <p className="font-medium text-foreground mb-1">
-                        Can teachers use this platform?
+                        O&apos;qituvchilar ushbu platformadan
+                        foydalana oladimi?
                       </p>
                       <p className="text-muted-foreground">
-                        Absolutely! Teachers can use our passages for classroom
-                        activities and assignments.
+                        Albatta! O&apos;qituvchilar matnlarni dars
+                        mashg&apos;ulotlari va topshiriqlarda ishlata olishadi.
                       </p>
                     </div>
                   </div>
@@ -211,10 +211,10 @@ const Contact = () => {
 
               <div className="bg-linear-to-r from-primary to-accent rounded-xl p-6 text-center">
                 <h3 className="text-xl font-bold text-primary-foreground mb-2">
-                  Quick Response Time
+                  Tezkor javob
                 </h3>
                 <p className="text-primary-foreground/90 text-sm">
-                  We typically respond to all inquiries within 24 hours
+                  Odatda barcha murojaatlarga 24 soat ichida javob beramiz
                 </p>
               </div>
             </div>

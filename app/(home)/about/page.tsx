@@ -6,11 +6,12 @@ import {
   Target,
   Sparkles,
   BadgeCheck,
-  Code2,
   Globe,
   HeartHandshake,
-  Lightbulb,
+  GraduationCap,
+  BookText,
 } from "lucide-react";
+import Image from "next/image";
 
 const About = () => {
   return (
@@ -33,7 +34,14 @@ const About = () => {
               <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
                   <div className="relative w-32 h-32 rounded-2xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-white shadow-lg">
-                    A
+                    <Image
+                      alt="Photo"
+                      src={"/images/me.jpg"}
+                      // Rasm konteynerni to'liq qoplashi uchun ushbu qiymatlar o'rnatildi
+                      width={128} // w-32 = 128px
+                      height={128} // h-32 = 128px
+                      className="object-cover rounded-2xl" // Rasmga ham burchak yumaloqligi berildi
+                    />
                     <div className="absolute -inset-1 rounded-3xl bg-primary/10 blur-2xl -z-10" />
                   </div>
                   <div className="flex-1 space-y-3">
@@ -42,30 +50,31 @@ const About = () => {
                       Loyiha yaratuvchisi
                     </p>
                     <h2 className="text-2xl md:text-3xl font-bold">
-                      Aziza Amonova — magistr
+                      Aziza Amonova — Magistrant
                     </h2>
                     <p className="text-muted-foreground leading-relaxed">
-                      Ilmiy izlanishlar va zamonaviy web texnologiyalarni
-                      birlashtirib, o‘quvchilarga ishonch bilan o‘qish va javob
-                      berishga yordam beradigan platformani yaratdi.
-                      Dilshodbekning maqsadi — ta’limda raqamli qulayliklar
-                      orqali har bir o‘quvchi uchun teng imkoniyat yaratish.
+                      Amonova Aziza Saydulloyevna 2002-yil 29-iyunda Navoiy
+                      viloyatida tug‘ilgan. izzax davlat pedagogika
+                      universitetini grant, imtiyozli asosda tamomlagan. Hozirda
+                      Navoiy davlat universiteti 2-bosqich magistranti. Uning 60
+                      ga yaqin ilmiy maqolalari xalqaro, nufuzli jurnal va
+                      konferensiyalarda, OAK jurnallarida nashr qilingan.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
                       {[
                         {
-                          icon: Code2,
-                          label: "Tech stack",
-                          value: "Next.js, Prisma, Postgres",
+                          icon: GraduationCap,
+                          label: "Ta'lim",
+                          value: "Navoiy DU 2-kurs Magistrant",
                         },
                         {
-                          icon: Lightbulb,
-                          label: "Ilhom",
-                          value: "Interaktiv savollar, gamifikatsiya",
+                          icon: BookText,
+                          label: "Natija",
+                          value: "B2 darajali ingliz tili sertifikat",
                         },
                         {
                           icon: Globe,
-                          label: "Missiya",
+                          label: "Maqsad",
                           value: "Har bir o‘quvchiga sifatli kontent",
                         },
                       ].map((item) => {
@@ -103,14 +112,12 @@ const About = () => {
                     </h2>
                     <p className="text-muted-foreground leading-relaxed">
                       PIRLS EDU butun dunyo maktab o‘quvchilari o‘rtasida o‘qish
-                      savodxonligini oshirishga bag‘ishlangan. Biz o‘qish va
-                      matnni tushunish ko‘nikmalari akademik muvaffaqiyat hamda
-                      umrbod o‘qishga bo‘lgan qiziqishning asosini tashkil
-                      etadi, deb ishonamiz. Bizning platformamiz o‘quvchilarga
-                      tanqidiy fikrlash va matnni chuqur tushunish
-                      qobiliyatlarini rivojlantirishga yordam beruvchi,
-                      ehtiyotkorlik bilan tanlangan matnlar va savollarni taqdim
-                      etadi.
+                      savodxonligini oshirishga bag‘ishlangan. Loyihaning asosiy
+                      maqsadi — PIRLS xalqaro talablariga mos keluvchi o‘qish
+                      savodxonligi va matnni tushunish ko‘nikmalarini
+                      rivojlantirish. Biz o‘qish va matnni tushunish
+                      ko‘nikmalari akademik muvaffaqiyat hamda umrbod o‘qishga
+                      bo‘lgan qiziqishning asosini tashkil etadi, deb ishonamiz.
                     </p>
                   </div>
                 </div>

@@ -23,9 +23,9 @@ const Footer = () => {
           </div>
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <span>Made with</span>
+            <span>Maqsadimiz</span>
             <Heart className="h-4 w-4 text-destructive fill-destructive" />
-            <span>for students worldwide</span>
+            <span>o‘quvchilarni o‘qish jarayonini rivojlantirish</span>
           </div>
 
           <div className="flex items-center gap-6">
@@ -33,13 +33,13 @@ const Footer = () => {
               href="/about"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              About
+              Biz haqimizda
             </Link>
             <Link
               href="/contact"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
-              Contact
+              Aloqa
             </Link>
             <a
               href="#"
@@ -51,7 +51,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-6 pt-6 border-t border-border text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} PIRLS EDU. All rights reserved.
+          © {new Date().getFullYear()} PIRLS EDU. Barcha huquqlar himoyalangan.
         </div>
       </div>
     </footer>
