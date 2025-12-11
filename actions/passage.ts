@@ -5,6 +5,43 @@ import prisma from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { QuestionType } from "@/lib/generated/prisma/enums";
 import type { FullPassage, PassageData } from "@/types";
+import { put } from "@vercel/blob";
+
+async function uploadImageToVercelBlob(dataUrl: string) {
+  const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+
+  if (!blobToken) {
+    throw new Error("Missing BLOB_READ_WRITE_TOKEN environment variable.");
+  }
+
+  // Allow reusing an already uploaded URL without re-uploading.
+  if (dataUrl.startsWith("http://") || dataUrl.startsWith("https://")) {
+    return dataUrl;
+  }
+
+  const matches = dataUrl.match(/^data:(.+);base64,(.*)$/);
+
+  if (!matches) {
+    throw new Error("Image data is not a valid base64 data URL.");
+  }
+
+  const [, mimeType, base64Payload] = matches;
+  const buffer = Buffer.from(base64Payload, "base64");
+  const extension = mimeType?.split("/")[1] || "png";
+  const filename = `passages/${Date.now()}.${extension}`;
+
+  const blob = await put(filename, buffer, {
+    access: "public",
+    token: blobToken,
+    contentType: mimeType || "application/octet-stream",
+  });
+
+  if (!blob.url) {
+    throw new Error("Upload response did not include a URL.");
+  }
+
+  return blob.url;
+}
 
 export async function createPassage(newPassage: PassageData) {
   try {
@@ -19,14 +56,16 @@ export async function createPassage(newPassage: PassageData) {
       throw new Error("Grade is required.");
     }
 
+    const imageUrl = newPassage.mainImageSrc
+      ? await uploadImageToVercelBlob(newPassage.mainImageSrc)
+      : null;
+
     const createdPassage = await prisma.passage.create({
       data: {
         content: newPassage.content,
         grade: newPassage.grade,
         title: newPassage.title,
-        imageUrl:
-          "https://images.unsplash.com/photo-1584175048814-8910fd9fdf1f?q=80&w=1932&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        // imageUrl: newPassage.mainImageSrc ?? null,
+        imageUrl,
         teacherId: user.id,
         questions: {
           create: newPassage.questions.map((question) => {
@@ -36,11 +75,9 @@ export async function createPassage(newPassage: PassageData) {
               content: question.prompt,
               type: isClosed ? QuestionType.CLOSED : QuestionType.OPEN,
               options: isClosed ? question.options : [],
-              // required Int in Prisma → always send something
               correctOptionIndex: isClosed
                 ? (question as any).correctIndex ?? 0
                 : 0,
-              // only open questions have expectedAnswer
               correctAnswer: !isClosed
                 ? (question as any).expectedAnswer || null
                 : null,
