@@ -176,7 +176,8 @@ export default async function PupilResults() {
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <BookOpen className="h-3.5 w-3.5" />
-                          {attempt.passage.grade.replace("_", "-")}
+                          {attempt.passage.grade.replace("GRADE_", "") +
+                            "-sinf"}
                         </span>
                         <span className="inline-flex items-center gap-1">
                           <Target className="h-3.5 w-3.5" />
