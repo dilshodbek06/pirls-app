@@ -25,7 +25,7 @@ export function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
     { dashboard?: string; results?: string }
   > = {
     TEACHER: { dashboard: "/teacher/dashboard", results: "/teacher/results" },
-    ADMIN: { dashboard: "/admin/dashboard", results: "/admin/dashboard" },
+    ADMIN: { dashboard: "/admin/dashboard", results: "/admin/results" },
     USER: { results: "/results" },
     GUEST: { dashboard: "/" },
   };

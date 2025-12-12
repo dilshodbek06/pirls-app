@@ -6,18 +6,23 @@ import prisma from "@/lib/db";
 export const dynamic = "force-dynamic";
 
 export default async function TeacherDashboard() {
-  const [passagesCount, teacherCount, studentCount, totalQuestions, passages] =
-    await Promise.all([
-      prisma.passage.count(),
-      prisma.user.count({ where: { role: "TEACHER" } }),
-      prisma.user.count({ where: { role: "USER" } }),
-      prisma.question.count(),
-      prisma.passage.findMany({
-        include: { questions: true },
-        orderBy: { createdAt: "desc" },
-        take: 3,
-      }),
-    ]);
+  const [
+    passagesCount,
+    teacherCount,
+    studentCount,
+    completedTestsCount,
+    passages,
+  ] = await Promise.all([
+    prisma.passage.count(),
+    prisma.user.count({ where: { role: "TEACHER" } }),
+    prisma.user.count({ where: { role: "USER" } }),
+    prisma.result.count({ where: { isCompleted: true } }),
+    prisma.passage.findMany({
+      include: { questions: true },
+      orderBy: { createdAt: "desc" },
+      take: 3,
+    }),
+  ]);
 
   const stats = [
     {
@@ -41,7 +46,7 @@ export default async function TeacherDashboard() {
     {
       icon: Award,
       label: "Bajarilgan testlar",
-      value: totalQuestions,
+      value: completedTestsCount,
       color: "from-orange-500 to-orange-600",
     },
   ];
