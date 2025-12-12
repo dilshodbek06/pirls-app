@@ -108,7 +108,7 @@ const Header = () => {
             ))}
 
             {/* Mobile Auth Section */}
-            <div className="w-full border-t border-white/20 pt-4 mt-2 space-y-2">
+            <div className="w-full px-4 border-t border-white/20 pt-4 mt-2 space-y-2">
               {isLoading ? (
                 <div className="w-full h-10 rounded-lg bg-white/20 animate-pulse" />
               ) : isLoggedIn && user ? (

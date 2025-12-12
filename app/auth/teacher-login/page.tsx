@@ -50,6 +50,7 @@ const TeacherLogin = () => {
         setError(result.error);
       } else {
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError("Login vaqti xatolik yuz berdi. Qayta urinib ko'ring.");

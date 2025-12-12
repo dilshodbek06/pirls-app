@@ -38,6 +38,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   passages Passage[]
+  results  Result[]
 }
 
 model Passage {
@@ -54,6 +55,7 @@ model Passage {
   updatedAt DateTime @updatedAt
 
   questions Question[]
+  results   Result[]
 }
 
 model Question {
@@ -71,4 +73,48 @@ model Question {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  answers Answer[]
+}
+
+model Result {
+  id          String  @id @default(uuid())
+  score       Int // Umumiy ball 85%
+  isCompleted Boolean @default(false) // Test yakunlanganligi
+
+  attemptNumber Int
+
+  // Foydalanuvchi bilan bog'lanish
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  // Matn (Passage) bilan bog'lanish
+  passageId String
+  passage   Passage @relation(fields: [passageId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  answers Answer[]
+
+  @@unique([userId, passageId, attemptNumber])
+}
+
+model Answer {
+  id         String  @id @default(uuid())
+  userAnswer String?
+  isCorrect  Boolean
+
+  // Natija (Result) bilan bog'lanish (Urinishga bog'langan)
+  resultId String
+  result   Result @relation(fields: [resultId], references: [id])
+
+  // Savol (Question) bilan bog'lanish
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([resultId, questionId])
 }

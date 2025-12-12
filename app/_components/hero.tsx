@@ -19,8 +19,6 @@ const Hero = async () => {
     role: "GUEST",
   }));
 
-  console.log(role);
-
   // CTA manzili — ro'l bo'yicha xaritadan yoki defaultga tushadi
   const ctaHref =
     isLoggedIn && role && ROUTE_BY_ROLE[role]

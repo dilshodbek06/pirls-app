@@ -51,6 +51,7 @@ const PupilLogin = () => {
         setError(result.error);
       } else {
         router.push("/passages");
+        router.refresh();
         toast.success("Tizimga muvaffaqiyatli kirdingiz");
       }
     } catch (err) {

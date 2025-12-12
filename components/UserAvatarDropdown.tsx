@@ -85,8 +85,8 @@ export function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
 
         {roleLinks.results && (
           <Link href={roleLinks.results} className="w-full">
-            <DropdownMenuItem className="cursor-pointer hover:text-black hover:bg-gray-200/70">
-              <ClipboardCheck className="mr-2 h-4 w-4 " />
+            <DropdownMenuItem className="cursor-pointer hover:text-black hover:bg-gray-200/70 group">
+              <ClipboardCheck className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Natijalar</span>
             </DropdownMenuItem>
           </Link>

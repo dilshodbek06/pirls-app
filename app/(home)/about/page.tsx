@@ -33,28 +33,30 @@ const About = () => {
             <section className="animate-fade-in-up">
               <div className="bg-card rounded-2xl p-8 border border-border shadow-sm">
                 <div className="flex flex-col md:flex-row md:items-center gap-6">
-                  <div className="relative w-32 h-32 rounded-2xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-white shadow-lg">
+                  <div className="relative mx-auto sm:mx-0 w-32 h-32 rounded-2xl bg-linear-to-br from-primary to-accent flex items-center justify-center text-4xl font-bold text-white shadow-lg">
                     <Image
                       alt="Photo"
                       src={"/images/me.jpg"}
-                      // Rasm konteynerni to'liq qoplashi uchun ushbu qiymatlar o'rnatildi
-                      width={128} // w-32 = 128px
-                      height={128} // h-32 = 128px
-                      className="object-cover rounded-2xl" // Rasmga ham burchak yumaloqligi berildi
+                      width={128}
+                      height={128}
+                      className="object-cover rounded-2xl"
                     />
                     <div className="absolute -inset-1 rounded-3xl bg-primary/10 blur-2xl -z-10" />
                   </div>
                   <div className="flex-1 space-y-3">
-                    <p className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold w-fit">
-                      <BadgeCheck className="h-4 w-4" />
-                      Loyiha yaratuvchisi
-                    </p>
-                    <h2 className="text-2xl md:text-3xl font-bold">
+                    <div className=" flex justify-center sm:block">
+                      <p className="inline-flex mt-2 sm:mt-0 items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-semibold w-fit">
+                        <BadgeCheck className="h-4 w-4" />
+                        Loyiha yaratuvchisi
+                      </p>
+                    </div>
+
+                    <h2 className="text-xl sm:text-2xl md:text-3xl font-bold">
                       Aziza Amonova — Magistrant
                     </h2>
                     <p className="text-muted-foreground leading-relaxed">
                       Amonova Aziza Saydulloyevna 2002-yil 29-iyunda Navoiy
-                      viloyatida tug‘ilgan. izzax davlat pedagogika
+                      viloyatida tug‘ilgan. Jizzax davlat pedagogika
                       universitetini grant, imtiyozli asosda tamomlagan. Hozirda
                       Navoiy davlat universiteti 2-bosqich magistranti. Uning 60
                       ga yaqin ilmiy maqolalari xalqaro, nufuzli jurnal va

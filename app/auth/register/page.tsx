@@ -117,6 +117,7 @@ const Register = () => {
       } else {
         toast.success("Ro'yxatdan muvaffaqiyatli o'tdingiz!");
         router.push("/passages");
+        router.refresh();
       }
     } catch (err) {
       console.error(err);

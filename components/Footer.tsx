@@ -1,4 +1,3 @@
-import { Heart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -23,9 +22,9 @@ const Footer = () => {
           </div>
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-            <span>Maqsadimiz</span>
-            <Heart className="h-4 w-4 text-destructive fill-destructive" />
-            <span>o‘quvchilarni o‘qish jarayonini rivojlantirish</span>
+            <span>
+              Maqsadimiz-o‘quvchilarni o‘qish jarayonini rivojlantirish
+            </span>
           </div>
 
           <div className="flex items-center gap-6">

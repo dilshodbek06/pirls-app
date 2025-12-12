@@ -299,6 +299,7 @@ const TeacherRegister = () => {
       } else {
         toast.success("Tizimga muvaffaqiyatli kirdingiz!");
         router.push("/");
+        router.refresh();
       }
     } catch (err) {
       setError("Ro'yhatdan o'tishda xatolik yuz berdi. Qayta urinib ko'ring.");

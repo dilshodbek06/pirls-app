@@ -29,9 +29,6 @@ function getGeminiModel() {
   return genAI;
 }
 
-/**
- * 503 xatosi uchun retry mexanizmi bilan Gemini API chaqiruvi
- */
 async function safeGenerateContent(
   model: GoogleGenAI,
   prompt: string,
@@ -94,9 +91,6 @@ async function safeGenerateContent(
   throw lastError;
 }
 
-/**
- * Gemini modelini ishlatib, ochiq savolga berilgan javobni baholaydi.
- */
 async function evaluateOpenAnswer(params: {
   questionContent: string;
   correctAnswer: string;
@@ -254,6 +248,62 @@ export async function gradePassageAnswers({
   const totalClosed = passage.questions.filter(
     (q) => q.type === QuestionType.CLOSED
   ).length;
+  const totalQuestions = passage.questions.length;
+  const scorePercentage =
+    totalQuestions > 0 ? Math.round((score / totalQuestions) * 100) : 0;
+
+  const resultsByQuestionId = results.reduce<Record<string, (typeof results)[number]>>(
+    (acc, item) => {
+      acc[item.questionId] = item;
+      return acc;
+    },
+    {}
+  );
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const lastAttempt = await tx.result.findFirst({
+        where: {
+          userId: user.id,
+          passageId,
+        },
+        orderBy: { attemptNumber: "desc" },
+        select: { attemptNumber: true },
+      });
+
+      const attemptNumber = (lastAttempt?.attemptNumber ?? 0) + 1;
+
+      await tx.result.create({
+        data: {
+          userId: user.id,
+          passageId,
+          score: scorePercentage,
+          isCompleted: true,
+          attemptNumber,
+          answers: {
+            create: passage.questions.map((question) => {
+              const rawAnswer = answers[question.id];
+              const normalizedAnswer =
+                typeof rawAnswer === "number"
+                  ? question.options[rawAnswer] ?? rawAnswer.toString()
+                  : (rawAnswer ?? "").toString();
+
+              return {
+                questionId: question.id,
+                userAnswer: normalizedAnswer,
+                isCorrect: resultsByQuestionId[question.id]?.isCorrect ?? false,
+              };
+            }),
+          },
+        },
+      });
+    });
+  } catch (error) {
+    console.error("Natijani bazaga saqlashda xatolik:", error);
+    throw new Error(
+      "Natijani bazaga saqlashda muammo yuz berdi. Iltimos, keyinroq urinib ko'ring."
+    );
+  }
 
   return {
     score,
