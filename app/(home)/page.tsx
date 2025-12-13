@@ -5,6 +5,8 @@ import WhyUs from "../_components/why-us";
 import Testimonials from "../_components/testimonials";
 import HeroBottom from "../_components/hero-bottom";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   return (
     <div>
