@@ -10,6 +10,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { loginAction } from "@/actions/auth";
+import { clearUserCache } from "@/hooks/use-user";
 
 const TeacherLogin = () => {
   const router = useRouter();
@@ -49,6 +50,7 @@ const TeacherLogin = () => {
       if (result?.error) {
         setError(result.error);
       } else {
+        clearUserCache(); // ensure fresh user fetch for header/avatar
         router.push("/");
         router.refresh();
       }

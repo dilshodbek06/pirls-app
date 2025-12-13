@@ -11,6 +11,7 @@ import { GraduationCap, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { loginPupil } from "@/actions/auth";
 import toast from "react-hot-toast";
+import { clearUserCache } from "@/hooks/use-user";
 
 const PupilLogin = () => {
   const router = useRouter();
@@ -50,6 +51,7 @@ const PupilLogin = () => {
       if (result?.error) {
         setError(result.error);
       } else {
+        clearUserCache(); // ensure fresh user fetch for header/avatar
         router.push("/passages");
         router.refresh();
         toast.success("Tizimga muvaffaqiyatli kirdingiz");

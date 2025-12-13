@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { registerAction } from "@/actions/auth";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { clearUserCache } from "@/hooks/use-user";
 
 // --- Data: Viloyatlar → Tumanlar ---
 const UZ_REGIONS: Record<string, string[]> = {
@@ -298,6 +299,7 @@ const TeacherRegister = () => {
       if (result?.error) {
         setError(result.error);
       } else {
+        clearUserCache(); // force header/user refresh after auto-login
         toast.success("Tizimga muvaffaqiyatli kirdingiz!");
         router.push("/");
         router.refresh();

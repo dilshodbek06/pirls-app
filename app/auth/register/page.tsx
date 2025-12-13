@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import { registerPupil } from "@/actions/auth";
 import { DISTRICTS, REGIONS } from "@/mock/auth";
 import toast from "react-hot-toast";
+import { clearUserCache } from "@/hooks/use-user";
 
 type FormData = {
   fullName: string;
@@ -115,6 +116,7 @@ const Register = () => {
       if (result?.error) {
         setError(result.error);
       } else {
+        clearUserCache(); // force header/user refresh after auto-login
         toast.success("Ro'yxatdan muvaffaqiyatli o'tdingiz!");
         router.push("/passages");
         router.refresh();
