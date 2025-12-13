@@ -1,32 +1,42 @@
-import { Award, BookOpen, Sparkles, TrendingUp } from "lucide-react";
+import { type ReactNode } from "react";
+
+import { Award, BookOpen, Globe2, TrendingUp } from "lucide-react";
+
+type Benefit = {
+  icon: ReactNode;
+  title: string;
+  description: string;
+};
+
+const BENEFITS: Benefit[] = [
+  {
+    icon: <BookOpen className="h-8 w-8" />,
+    title: "Matnni anglash strategiyalari",
+    description:
+      "PIRLS uslubidagi topshiriqlar orqali asosiy g‘oya va dalillarni aniqlash ko‘nikmasini rivojlantiring.",
+  },
+
+  {
+    icon: <TrendingUp className="h-8 w-8" />,
+    title: "Natijalarni kuzatish",
+    description: "Har bir testdan so‘ng individual tahlillarni ko‘ring.",
+  },
+
+  {
+    icon: <Award className="h-8 w-8" />,
+    title: "Standartlarga mos mazmun",
+    description:
+      "Milliy dastur va PIRLS talablariga mos, sinf darajasiga moslashtirilgan materiallar.",
+  },
+
+  {
+    icon: <Globe2 className="h-8 w-8" />,
+    title: "O‘zbek tiliga mos platforma",
+    description: "Ona tildagi matnlar va o‘quvchiga yaqin tushunarli kontekst.",
+  },
+];
 
 const WhyUs = () => {
-  const benefits = [
-    {
-      icon: <BookOpen className="h-8 w-8" />,
-      title: "O‘qish tushunishni yaxshilaydi",
-      description:
-        "Puxta tanlangan matnlar va savollar orqali o‘qish ko‘nikmalaringizni mustahkamlang.",
-    },
-    {
-      icon: <Sparkles className="h-8 w-8" />,
-      title: "Qiziqarli va interaktiv mashg‘ulotlar",
-      description:
-        "O‘qishni yanada zavqli qiladigan qiziqarli hikoyalar va mavzular bilan shug‘ullaning.",
-    },
-    {
-      icon: <TrendingUp className="h-8 w-8" />,
-      title: "Tracks Your Progress",
-      description:
-        "See your scores and improvements as you complete more passages.",
-    },
-    {
-      icon: <Award className="h-8 w-8" />,
-      title: "School-Level Learning",
-      description:
-        "Designed specifically for school students with age-appropriate content.",
-    },
-  ];
   return (
     <div>
       <section className="py-20 px-4 bg-muted/30">
@@ -42,7 +52,7 @@ const WhyUs = () => {
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((benefit, index) => (
+            {BENEFITS.map((benefit, index) => (
               <div
                 key={index}
                 className="bg-card rounded-xl p-6 border border-border hover:shadow-lg transition-all hover:-translate-y-1 animate-fade-in"
