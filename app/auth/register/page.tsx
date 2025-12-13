@@ -94,7 +94,7 @@ const Register = () => {
     const schoolNamePattern = /^\d+-/;
     if (!schoolNamePattern.test(formData.schoolName.trim())) {
       setError(
-        'Maktab nomi raqam bilan boshlanishi kerak (masalan: "45-maktab")'
+        'Maktab ushbu tartibda kiritilinishi kerak (masalan: "45-maktab")'
       );
       setIsLoading(false);
       return;

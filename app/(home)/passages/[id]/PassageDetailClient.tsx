@@ -284,7 +284,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [isTimeOutModalOpen, setIsTimeOutModalOpen] = useState(false); // time out modal
   const [timerKey, setTimerKey] = useState(0); // to restart timer on reset
-  const [isTimerRunning, setIsTimerRunning] = useState(true); // NEW: control timer
+  const [isTimerRunning, setIsTimerRunning] = useState(false); // pause timer until login
 
   const closedQuestions = passage.questions.filter((q) => q.type === "CLOSED");
   const openQuestions = passage.questions.filter((q) => q.type === "OPEN");
@@ -396,6 +396,12 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     return () => clearInterval(timer);
   }, [timerKey, isTimerRunning]);
 
+  // Start timer only after user is confirmed logged in
+  useEffect(() => {
+    if (isLoading) return;
+    setIsTimerRunning(isLoggedIn);
+  }, [isLoggedIn, isLoading]);
+
   // When time is over, just show modal, don't grade
   useEffect(() => {
     if (timeLeft === 0 && !showResults) {
@@ -423,7 +429,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     setIsSubmitting(false);
     setTimeLeft(TOTAL_TIME);
     setTimerKey((prev) => prev + 1); // restart timer
-    setIsTimerRunning(true); // NEW: restart timer
+    setIsTimerRunning(isLoggedIn); // Only restart timer for logged-in users
   };
 
   const handleDownloadCertificate = useCallback(() => {

@@ -41,14 +41,6 @@ interface ResultTableClientProps {
   totalAttempts: number;
 }
 
-function formatDate(dateIso: string) {
-  return new Date(dateIso).toLocaleDateString("uz-UZ", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  });
-}
-
 function getUniqueOptions(results: ResultRow[], key: keyof ResultRow["user"]) {
   return Array.from(
     new Set(

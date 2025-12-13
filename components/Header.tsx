@@ -68,10 +68,10 @@ const Header = () => {
               <UserAvatarDropdown user={user} />
             ) : (
               <Link
-                href="/auth/teacher-login"
+                href="/auth/login"
                 className="text-sm font-semibold text-white hover:text-white/80 transition-colors bg-white/20 px-4 py-2 rounded-lg hover:bg-white/30"
               >
-                O‘qituvchi kabinetiga kirish
+                Kirish
               </Link>
             )}
           </div>

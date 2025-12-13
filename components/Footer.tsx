@@ -6,20 +6,22 @@ const Footer = () => {
     <footer className="bg-card border-t border-border mt-20">
       <div className="container max-w-340 mx-auto px-4 sm:px-6 lg:px-0 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div>
-              <Image
-                className="rounded-full"
-                alt="PIRLS EDU"
-                src={"/images/logo.png"}
-                width={50}
-                height={50}
-              />
+          <Link href={"/"}>
+            <div className="flex items-center gap-2">
+              <div>
+                <Image
+                  className="rounded-full"
+                  alt="PIRLS EDU"
+                  src={"/images/logo.png"}
+                  width={50}
+                  height={50}
+                />
+              </div>
+              <span className="text-lg font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
+                PIRLS EDU
+              </span>
             </div>
-            <span className="text-lg font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-              PIRLS EDU
-            </span>
-          </div>
+          </Link>
 
           <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <span>

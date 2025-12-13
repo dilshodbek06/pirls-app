@@ -24,6 +24,7 @@ import {
 import { useRouter } from "next/navigation";
 import { registerAction } from "@/actions/auth";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 // --- Data: Viloyatlar → Tumanlar ---
 const UZ_REGIONS: Record<string, string[]> = {
@@ -276,7 +277,7 @@ const TeacherRegister = () => {
     const schoolNamePattern = /^\d+-/;
     if (!schoolNamePattern.test(formData.schoolName.trim())) {
       setError(
-        'Maktab nomi raqam bilan boshlanishi kerak (masalan: "45-maktab")'
+        'Maktab ushbu tartibda kiritilinishi kerak (masalan: "45-maktab")'
       );
       setIsLoading(false);
       return;
@@ -334,7 +335,7 @@ const TeacherRegister = () => {
               </div>
             </div>
             <h1 className="text-3xl md:text-4xl font-bold mb-3">
-              O‘qituvchi Kabineti
+              O‘qituvchi Ro‘yhatdan o‘tish
             </h1>
             <p className="text-muted-foreground text-base md:text-lg">
               Ta’lim materiallariga kirish va o‘quvchilaringiz natijalarini
@@ -522,6 +523,17 @@ const TeacherRegister = () => {
                       ? "Ro'yhatdan o'tilmoqda..."
                       : "Ro'yxatdan o'tish"}
                   </Button>
+                </div>
+                <div className="pt-2 text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Akkauntingiz bormi?{" "}
+                    <Link
+                      href="/auth/teacher-login"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Kirish
+                    </Link>
+                  </p>
                 </div>
               </form>
             </CardContent>
