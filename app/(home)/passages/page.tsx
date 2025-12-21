@@ -24,7 +24,7 @@ const Passages = async () => {
             </div>
             <h1 className="text-4xl font-bold mb-4">Barcha matnlar</h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Matnni tanlang va o‘qish tushunish darajangizni tekshirib ko‘ring.
+              Matnni tanlang va o‘qib tushunish darajangizni tekshirib ko‘ring.
             </p>
           </div>
 
@@ -41,7 +41,7 @@ const Passages = async () => {
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-gray-200 bg-white p-8 text-center text-gray-600">
-              Hali matnlar qoo‘shilmagan
+              Hali matnlar qo‘shilmagan.
             </div>
           )}
         </div>

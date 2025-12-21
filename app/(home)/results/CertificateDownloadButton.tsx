@@ -73,7 +73,9 @@ export default function CertificateDownloadButton({
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `sertifikat-${passageTitle.toLowerCase().replace(/\s+/g, "-")}.png`;
+      link.download = `sertifikat-${passageTitle
+        .toLowerCase()
+        .replace(/\s+/g, "-")}.png`;
       link.click();
       URL.revokeObjectURL(url);
     }, "image/png");
@@ -88,7 +90,7 @@ export default function CertificateDownloadButton({
       className="cursor-pointer"
       disabled={!isEligible}
     >
-      <Download className="h-4 w-4 mr-2" />
+      <Download className="h-4 w-4" />
       Sertifikat
     </Button>
   );

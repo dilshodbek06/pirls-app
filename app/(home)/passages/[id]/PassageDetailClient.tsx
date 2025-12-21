@@ -70,14 +70,14 @@ const QuestionCard = ({
   };
 
   return (
-    <Card key={question.id} className="mt-4 shadow-md">
-      <CardHeader className="bg-gray-50 border-b p-4">
-        <CardTitle className="text-lg flex items-start gap-2 ">
+    <Card key={question.id} className="sm:mt-4 shadow-md pt-0">
+      <CardHeader className="bg-gray-50 border-b p-4 pb-2! rounded-t-xl">
+        <CardTitle className="text-lg flex items-start gap-2">
           <span className="font-extrabold text-xl shrink-0">{qIndex + 1}.</span>
           <span className="flex-1">{question.content}</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
+      <CardContent className="">
         {/* CLOSED Question Type (RadioGroup) */}
         {question.type === "CLOSED" && (
           <RadioGroup
@@ -160,7 +160,7 @@ const ResultModal = ({
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-0 overflow-y-auto max-h-screen">
+      <DialogContent className="sm:max-w-106.25 md:max-w-lg lg:max-w-xl p-0 overflow-y-auto max-h-screen">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-3xl font-extrabold text-center text-gray-800 flex items-center justify-center gap-2">
             <Award className="h-6 w-6 text-blue-600" />
@@ -235,7 +235,7 @@ const TimeOutModal = ({
   onRetry: () => void;
 }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className="sm:max-w-[360px] text-center p-8">
+    <DialogContent className="sm:max-w-90 text-center p-8">
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold text-red-600">
           ⏰ OOPS, your time is gone!
@@ -271,6 +271,7 @@ type PassageDetailClientProps = {
 
 const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   const TOTAL_TIME = 40 * 60; // total time in seconds
+  const STORAGE_KEY = `passage-${passage.id}-timer`;
   const router = useRouter();
   const { user, isLoggedIn, isLoading } = useUser();
   const [answers, setAnswers] = useState<AnswerState>({});
@@ -302,6 +303,11 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       [questionId]: answer,
     }));
   };
+
+  const clearTimerStorage = useCallback(() => {
+    if (typeof window === "undefined") return;
+    localStorage.removeItem(STORAGE_KEY);
+  }, [STORAGE_KEY]);
 
   const gradeQuiz = useCallback(async () => {
     if (isLoading) {
@@ -354,6 +360,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       setScore(result.score);
       setShowResults(true); // just to lock inputs, not to show per-question correctness
       setIsModalOpen(true);
+      clearTimerStorage();
     } catch (error) {
       const message =
         error instanceof Error
@@ -371,6 +378,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     passage.questions,
     router,
     user,
+    clearTimerStorage,
   ]);
 
   const handleSubmit = () => {
@@ -378,6 +386,33 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     if (timeLeft === 0 || isSubmitting) return;
     void gradeQuiz();
   };
+
+  // Restore timer state from localStorage on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved) as {
+        timeLeft: number;
+        lastUpdated: number;
+        wasRunning: boolean;
+      };
+      const elapsedSeconds = parsed.wasRunning
+        ? Math.floor((Date.now() - parsed.lastUpdated) / 1000)
+        : 0;
+      const remaining = Math.max(parsed.timeLeft - elapsedSeconds, 0);
+
+      setTimeLeft(remaining);
+      if (remaining === 0) {
+        setIsTimerRunning(false);
+        setIsTimeOutModalOpen(true);
+      }
+    } catch {
+      clearTimerStorage();
+    }
+  }, [STORAGE_KEY, clearTimerStorage]);
 
   // Timer countdown — restarts when timerKey changes, and only runs if isTimerRunning
   useEffect(() => {
@@ -402,6 +437,19 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     setIsTimerRunning(isLoggedIn);
   }, [isLoggedIn, isLoading]);
 
+  // Persist timer state so reload keeps remaining time
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        timeLeft,
+        lastUpdated: Date.now(),
+        wasRunning: isTimerRunning,
+      })
+    );
+  }, [timeLeft, STORAGE_KEY, isTimerRunning]);
+
   // When time is over, just show modal, don't grade
   useEffect(() => {
     if (timeLeft === 0 && !showResults) {
@@ -409,6 +457,12 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       setIsTimerRunning(false);
     }
   }, [timeLeft, showResults]);
+
+  useEffect(() => {
+    if (showResults) {
+      clearTimerStorage();
+    }
+  }, [showResults, clearTimerStorage]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -422,6 +476,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   const isTimeLow = timeLeft <= 5 * 60;
 
   const resetQuiz = () => {
+    clearTimerStorage();
     setAnswers({});
     setShowResults(false);
     setScore(0);
@@ -519,25 +574,26 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
         <Header />
       </div>
 
-      <main className="flex-1 py-12 px-4 bg-gray-50">
+      <main className="flex-1 py-6 sm:py-12 px-0 bg-gray-50">
         <div className="container mx-auto max-w-4xl">
-          <Link href="/passages">
+          <Link href="/passages" className="ml-2">
             <Button
               variant="outline"
               className="mb-6 text-gray-700 hover:bg-green-600"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <ArrowLeft className=" h-4 w-4" />
               Matnlar ro&apos;yxatiga qaytish
             </Button>
           </Link>
 
           {/* Combined Passage and Tests Section */}
-          <Card className="p-6 md:p-10 shadow-md animate-fade-in">
+          <Card className="p-4 pt-6 sm:p-6 md:p-10  shadow-md animate-fade-in">
             {/* --- Passage Header --- */}
-            <div className="flex items-start justify-between gap-3 mb-6 border-b pb-4">
+            <div className="flex items-start justify-between gap-3 mb-1 border-b pb-4">
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight">
                 {passage.title}
               </h1>
+
               {passageGrade && (
                 <Badge
                   variant="outline"
@@ -548,31 +604,35 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
               )}
             </div>
 
-            {/* --- Image --- */}
-            <div className="relative h-52 sm:h-64 w-full mb-6 rounded-xl overflow-hidden shadow-lg">
-              <Image
-                src={passage.imageUrl ?? "/images/passage-banner-default.jpg"}
-                alt={`${passage.title} banner`}
-                fill
-                sizes="(max-width: 1024px) 100vw, 1024px"
-                className="object-cover"
-                priority
-              />
-            </div>
+            {/* --- Image + Passage Content (FLOAT BEHAVIOR) --- */}
+            <div className="mb-8">
+              {/* Float Image */}
+              <div className="relative w-full sm:w-72 aspect-3/4 sm:float-left mr-6 mb-4 rounded-lg overflow-hidden shadow-lg">
+                <Image
+                  src={passage.imageUrl ?? "/images/passage-banner-default.jpg"}
+                  alt={`${passage.title} banner`}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
 
-            {/* --- Passage Content (The 'Story') --- */}
-            <div className="prose prose-lg max-w-none text-gray-700 border-b pb-8 mb-1">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-lg">
+              {/* Text wraps around image */}
+              <p className="xs:text-lg leading-relaxed text-justify whitespace-pre-wrap text-gray-700">
                 {passage.content}
               </p>
+
+              {/* IMPORTANT: stop float for next sections */}
+              <div className="clear-both" />
             </div>
 
-            {/* --- Questions/Tests --- */}
+            {/* --- Questions/Tests Header --- */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
-              <h2 className="text-2xl font-bold text-gray-800">
+              <h2 className="text-center xs:text-start text-2xl font-bold text-gray-800">
                 Matn bo‘yicha testlar
               </h2>
-              <div className="w-full fixed bottom-3 left-1/2 -translate-x-1/2 md:w-auto flex flex-col gap-2">
+              {/* time bottom */}
+              <div className="w-full max-w-1/2 xs:max-w-full fixed bottom-3 left-1/2 -translate-x-1/2 md:w-auto flex flex-col gap-2">
                 <div
                   className={`flex items-center justify-between rounded-xl border px-4 py-2 shadow-sm ${
                     isTimeLow
@@ -588,6 +648,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
                     {formatTime(timeLeft)}
                   </span>
                 </div>
+
                 <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
                   <div
                     className={`h-full ${
@@ -601,6 +662,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
               </div>
             </div>
 
+            {/* --- Questions --- */}
             <div className="space-y-6">
               {passage.questions.map((question, qIndex) => (
                 <QuestionCard

@@ -26,6 +26,7 @@ import { registerPupil } from "@/actions/auth";
 import { DISTRICTS, REGIONS } from "@/mock/auth";
 import toast from "react-hot-toast";
 import { clearUserCache } from "@/hooks/use-user";
+import Link from "next/link";
 
 type FormData = {
   fullName: string;
@@ -327,6 +328,17 @@ const Register = () => {
                       ? "Ro'yhatdan o'tilmoqda..."
                       : "Ro'yxatdan o'tish"}
                   </Button>
+                </div>
+                <div className=" text-center space-y-3">
+                  <p className="text-sm text-muted-foreground">
+                    Akkauntingiz bormi?{" "}
+                    <Link
+                      href="/auth/login"
+                      className="text-primary hover:underline font-semibold"
+                    >
+                      Kirish
+                    </Link>
+                  </p>
                 </div>
               </form>
             </CardContent>

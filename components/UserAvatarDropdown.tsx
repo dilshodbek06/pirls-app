@@ -76,8 +76,8 @@ export function UserAvatarDropdown({ user }: UserAvatarDropdownProps) {
         <DropdownMenuSeparator />
         {roleLinks.dashboard && (
           <Link href={roleLinks.dashboard} className="w-full">
-            <DropdownMenuItem className="cursor-pointer hover:text-black hover:bg-gray-200/70">
-              <UserCircle className="mr-2 h-4 w-4 " />
+            <DropdownMenuItem className="cursor-pointer hover:text-black hover:bg-gray-200/70 group">
+              <UserCircle className="mr-2 h-4 w-4 group-hover:text-white" />
               <span>Mening kabinetim</span>
             </DropdownMenuItem>
           </Link>
