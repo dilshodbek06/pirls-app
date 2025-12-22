@@ -30,7 +30,7 @@ export type OpenQuestion = QuestionCommon & {
 
 export type ClosedQuestion = QuestionCommon & {
   kind: "closed";
-  options: [string, string, string];
+  options: [string, string, string, string];
   correctIndex?: number;
 };
 

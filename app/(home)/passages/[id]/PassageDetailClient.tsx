@@ -235,32 +235,46 @@ const TimeOutModal = ({
   onRetry: () => void;
 }) => (
   <Dialog open={isOpen} onOpenChange={onClose}>
-    <DialogContent className="sm:max-w-90 text-center p-8">
-      <DialogHeader>
-        <DialogTitle className="text-2xl font-bold text-red-600">
-          ⏰ OOPS, your time is gone!
+    <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl shadow-xl">
+      {/* Header */}
+      <div className="bg-gray-50 px-6 py-4  text-center">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white/20 text-2xl">
+          ⏰
+        </div>
+        <DialogTitle className="text-3xl font-bold">
+          Vaqtingiz tugadi
         </DialogTitle>
-      </DialogHeader>
+        <p className="mt-1">Test yakunlandi</p>
+      </div>
 
-      <p className="text-gray-600 mt-2">Try again?</p>
+      {/* Body */}
+      <div className="pb-6 pt-2 px-3 text-center">
+        <p className="text-gray-600 text-sm">
+          Qayta urinib ko‘rmoqchimisiz yoki chiqib ketasizmi?
+        </p>
 
-      <DialogFooter className="mt-6 flex flex-col gap-3">
-        <Button
-          onClick={() => {
-            onRetry();
-            onClose();
-          }}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          Try Again
-        </Button>
-
-        <Link href="/passages" className="w-full">
-          <Button className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800">
-            Exit
+        {/* Actions */}
+        <div className="mt-6 flex flex-col gap-3">
+          <Button
+            onClick={() => {
+              onRetry();
+              onClose();
+            }}
+            className="w-full bg-blue-600 hover:bg-blue-700 transition-all text-white font-medium"
+          >
+            🔁 Qayta urinish
           </Button>
-        </Link>
-      </DialogFooter>
+
+          <Link href="/passages" className="w-full">
+            <Button
+              variant="outline"
+              className="w-full hover:text-black border-gray-300 text-gray-700 hover:bg-gray-50"
+            >
+              🚪 Chiqish
+            </Button>
+          </Link>
+        </div>
+      </div>
     </DialogContent>
   </Dialog>
 );

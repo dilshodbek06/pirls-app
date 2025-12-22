@@ -115,7 +115,7 @@ function PassageForm() {
           id: generateId(),
           kind: "closed",
           prompt: "Yopiq savol matnini kiriting (To'g'ri javobni tanlang)",
-          options: ["Variant A", "Variant B", "Variant C"],
+          options: ["Variant A", "Variant B", "Variant C", "Variant D"],
           correctIndex: 0,
         },
       ]),
@@ -143,7 +143,7 @@ function PassageForm() {
   );
 
   const updateClosedOption = useCallback(
-    (id: string, index: 0 | 1 | 2, value: string) =>
+    (id: string, index: 0 | 1 | 2 | 3, value: string) =>
       setQuestions((qs) =>
         qs.map((qq) =>
           qq.id === id && qq.kind === "closed"
@@ -151,7 +151,7 @@ function PassageForm() {
                 ...qq,
                 options: qq.options.map((o, i) =>
                   i === index ? value : o
-                ) as [string, string, string],
+                ) as [string, string, string, string],
               }
             : qq
         )
@@ -321,7 +321,7 @@ interface EditorViewProps {
   addClosedQuestion: () => void;
   updateQuestionPrompt: (id: string, prompt: string) => void;
   updateOpenAnswer: (id: string, answer: string) => void;
-  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2 | 3, value: string) => void;
   setClosedCorrect: (id: string, idx: number) => void;
   removeQuestion: (id: string) => void;
 }
@@ -468,7 +468,7 @@ interface QuestionsEditorProps {
   questions: Question[];
   updatePrompt: (id: string, prompt: string) => void;
   updateOpenAnswer: (id: string, answer: string) => void;
-  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2 | 3, value: string) => void;
   setClosedCorrect: (id: string, idx: number) => void;
   addOpen: () => void;
   addClosed: () => void;
@@ -540,7 +540,7 @@ interface QuestionCardProps {
   index: number;
   updatePrompt: (id: string, prompt: string) => void;
   updateOpenAnswer: (id: string, answer: string) => void;
-  updateClosedOption: (id: string, index: 0 | 1 | 2, value: string) => void;
+  updateClosedOption: (id: string, index: 0 | 1 | 2 | 3, value: string) => void;
   setClosedCorrect: (id: string, idx: number) => void;
   removeQuestion: (id: string) => void;
 }
@@ -626,11 +626,11 @@ function QuestionCard(props: QuestionCardProps) {
                 onChange={(e) =>
                   updateClosedOption(
                     question.id,
-                    i as 0 | 1 | 2,
+                    i as 0 | 1 | 2 | 3,
                     e.target.value
                   )
                 }
-                placeholder={`Variant ${["A", "B", "C"][i]}`}
+                placeholder={`Variant ${["A", "B", "C", "D"][i]}`}
                 className={`flex-1 rounded-lg border p-2 text-sm ${
                   (question as ClosedQuestion).correctIndex === i
                     ? "bg-green-100 border-green-500 shadow-sm"
