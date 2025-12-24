@@ -306,7 +306,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   const totalClosedQuestions = closedQuestions.length + openQuestions.length;
   const scorePercentage =
     totalClosedQuestions > 0 ? (score / totalClosedQuestions) * 100 : 0;
-  const showCertificate = scorePercentage >= 80;
+  const showCertificate = scorePercentage >= 90;
   const studentName =
     user?.fullName || user?.email || "Foydalanuvchi nomi kiritilmagan";
 
