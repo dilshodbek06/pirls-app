@@ -666,63 +666,70 @@ function PreviewView(props: PreviewViewProps) {
 
   return (
     // Single Section Container (Now white/clean style)
-    <div className="bg-white p-6 sm:p-8 rounded-lg  border border-gray-200 space-y-5 max-w-4xl mx-auto font-sans">
-      {/* Passage Header */}
-      <header className="text-center border-gray-300">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
+    <div className="bg-white p-4 pt-6 sm:p-6 md:p-10 shadow-md rounded-lg border border-gray-200 max-w-4xl mx-auto font-sans animate-fade-in">
+      {/* --- Header (like other component) --- */}
+      <div className="flex items-start justify-between gap-3 mb-1 border-b pb-4">
+        <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
           {title || "Sarlavhasiz matn"}
         </h2>
 
+        {/* Badge (shadcn bo'lmasa ham oddiy pill style) */}
         <div className="inline-flex items-center gap-2 bg-primary/10 rounded-full px-4 py-2 mt-1">
-          <GraduationCap className="h-4 w-4 text-primary" />
+          {" "}
+          <GraduationCap className="h-4 w-4 text-primary" />{" "}
           <span className="text-sm font-medium text-primary">
+            {" "}
             {grade === "GRADE_3"
               ? "3-sinf"
               : grade === "GRADE_4"
               ? "4-sinf"
-              : "?-sinf"}
-          </span>
+              : "?-sinf"}{" "}
+          </span>{" "}
         </div>
-      </header>
+      </div>
 
-      {/* Rasm */}
-      {mainImageSrc && (
-        <div className="flex justify-center my-6">
-          <div className="w-full  p-2 bg-white  border-gray-200">
+      {/* --- Image + Content (FLOAT BEHAVIOR) --- */}
+      <div className="mb-8 mt-6">
+        {mainImageSrc ? (
+          <div className="relative w-full sm:w-72 aspect-3/4 sm:float-left mr-6 mb-4 rounded-lg overflow-hidden shadow-lg border border-gray-100">
             <Image
-              width={500}
-              height={400}
               src={mainImageSrc}
               alt="Matnning asosiy rasmi"
-              className="max-h-80 w-full object-cover rounded-md"
+              fill
+              className="object-cover"
+              priority
               onError={(e) => {
                 const img = e.target as HTMLImageElement;
                 img.onerror = null;
-                // Updated placeholder color scheme for clean white background
                 img.src =
-                  "https://placehold.co/600x400/eeeeee/333333?text=Rasm+Mavjud+Emas";
+                  "https://placehold.co/600x800/eeeeee/333333?text=Rasm+Mavjud+Emas";
               }}
             />
           </div>
-        </div>
-      )}
+        ) : null}
 
-      {/* Passage Content Preview */}
-      <article className="text-gray-800 text-lg">
         {content ? (
-          <p className="whitespace-pre-wrap indent-8 text-justify">{content}</p>
+          <p className="xs:text-lg leading-relaxed text-justify whitespace-pre-wrap text-gray-700 indent-8">
+            {content}
+          </p>
         ) : (
           <p className="text-gray-500 italic text-center">
             Matn mazmuni bo‘sh. Avval tahrirlash rejimida mazmun kiriting.
           </p>
         )}
-      </article>
 
-      {/* Student Questions View (Seamlessly integrated) */}
-      <section className="pt-6 border-t border-gray-300">
-        <h3 className="text-2xl font-bold mb-6 text-gray-700 text-center">
-          Sinov savollari
-        </h3>
+        {/* IMPORTANT: stop float for next sections */}
+        <div className="clear-both" />
+      </div>
+
+      {/* --- Questions --- */}
+      <section className="pt-6 border-t border-gray-200">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
+          <h3 className="text-center md:text-left text-2xl font-bold text-gray-800">
+            Matn bo‘yicha testlar
+          </h3>
+        </div>
+
         <StudentQuestionsView
           questions={questions}
           answers={answers}

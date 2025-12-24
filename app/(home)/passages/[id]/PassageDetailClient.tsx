@@ -601,7 +601,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
           </Link>
 
           {/* Combined Passage and Tests Section */}
-          <Card className="p-4 pt-6 sm:p-6 md:p-10  shadow-md animate-fade-in">
+          <Card className="p-4 pt-6 sm:p-6 md:p-10 shadow-md animate-fade-in">
             {/* --- Passage Header --- */}
             <div className="flex items-start justify-between gap-3 mb-1 border-b pb-4">
               <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 leading-tight">
