@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -59,6 +60,12 @@ const QuestionCard = ({
 }) => {
   const answerValue = answers[question.id];
 
+  // options xavfsizligi (null/undefined/Json bo'lsa ham portlamasin)
+  const safeOptions: string[] = useMemo(() => {
+    const opts: unknown = (question as any).options;
+    return Array.isArray(opts) ? (opts as string[]) : [];
+  }, [question]);
+
   // Helper to determine the item class (no per-question correct/incorrect colors)
   const getItemClass = (oIndex: number) => {
     const isSelected = answerValue === oIndex;
@@ -80,55 +87,60 @@ const QuestionCard = ({
       <CardContent className="">
         {/* CLOSED Question Type (RadioGroup) */}
         {question.type === "CLOSED" && (
-          <RadioGroup
-            value={answerValue !== undefined ? answerValue.toString() : ""}
-            onValueChange={(value) =>
-              handleAnswerChange(question.id, parseInt(value))
-            }
-            disabled={showResults} // lock answers after submit
-            className="space-y-1"
-          >
-            {question.options.map((option, oIndex) => {
-              const id = `${question.id}-${oIndex}`;
+          <>
+            {safeOptions.length === 0 ? (
+              <p className="text-sm text-red-600">
+                Variantlar topilmadi. Iltimos admin bilan bog&apos;laning.
+              </p>
+            ) : (
+              <RadioGroup
+                value={answerValue !== undefined ? String(answerValue) : ""}
+                onValueChange={(value) =>
+                  handleAnswerChange(question.id, Number.parseInt(value, 10))
+                }
+                disabled={showResults} // lock answers after submit
+                className="space-y-1"
+              >
+                {safeOptions.map((option, oIndex) => {
+                  const id = `${question.id}-${oIndex}`;
 
-              return (
-                <div
-                  key={oIndex}
-                  className={getItemClass(oIndex)}
-                  onClick={() =>
-                    !showResults && handleAnswerChange(question.id, oIndex)
-                  }
-                >
-                  <RadioGroupItem
-                    value={oIndex.toString()}
-                    id={id}
-                    className="h-4 w-4 sr-only"
-                  />
-                  <Label
-                    htmlFor={id}
-                    className="flex-1 cursor-pointer text-base select-none"
-                  >
-                    {option}
-                  </Label>
-                </div>
-              );
-            })}
-          </RadioGroup>
+                  return (
+                    <div
+                      key={oIndex}
+                      className={getItemClass(oIndex)}
+                      onClick={() =>
+                        !showResults && handleAnswerChange(question.id, oIndex)
+                      }
+                    >
+                      <RadioGroupItem
+                        value={String(oIndex)}
+                        id={id}
+                        className="h-4 w-4 sr-only"
+                      />
+                      <Label
+                        htmlFor={id}
+                        className="flex-1 cursor-pointer text-base select-none"
+                      >
+                        {option}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            )}
+          </>
         )}
 
         {/* OPEN Question Type (Textarea) */}
         {question.type === "OPEN" && (
-          <>
-            <Textarea
-              placeholder="Javobingizni shu yerga yozing..."
-              value={(answerValue as string) || ""}
-              onChange={(e) => handleAnswerChange(question.id, e.target.value)}
-              disabled={showResults} // lock answers after submit
-              rows={4}
-              className="focus-visible:ring-blue-500"
-            />
-            {/* no per-question evaluation text */}
-          </>
+          <Textarea
+            placeholder="Javobingizni shu yerga yozing..."
+            value={typeof answerValue === "string" ? answerValue : ""}
+            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            disabled={showResults} // lock answers after submit
+            rows={4}
+            className="focus-visible:ring-blue-500"
+          />
         )}
       </CardContent>
     </Card>
@@ -140,7 +152,7 @@ const ResultModal = ({
   isOpen,
   onClose,
   score,
-  totalClosedQuestions,
+  totalQuestions,
   scorePercentage,
   showCertificate,
   studentName,
@@ -150,7 +162,7 @@ const ResultModal = ({
   isOpen: boolean;
   onClose: () => void;
   score: number;
-  totalClosedQuestions: number;
+  totalQuestions: number;
   scorePercentage: number;
   showCertificate: boolean;
   passageTitle: string;
@@ -159,7 +171,12 @@ const ResultModal = ({
   onResetQuiz: () => void;
 }) => {
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-106.25 md:max-w-lg lg:max-w-xl p-0 overflow-y-auto max-h-screen">
         <DialogHeader className="p-6 pb-0">
           <DialogTitle className="text-3xl font-extrabold text-center text-gray-800 flex items-center justify-center gap-2">
@@ -180,7 +197,7 @@ const ResultModal = ({
                 {scorePercentage.toFixed(0)}%
               </p>
               <p className="text-xl font-bold text-gray-700 mb-4">
-                {score} / {totalClosedQuestions} to&apos;g&apos;ri javob
+                {score} / {totalQuestions} to&apos;g&apos;ri javob
               </p>
               {showCertificate && (
                 <Button
@@ -234,7 +251,12 @@ const TimeOutModal = ({
   onClose: () => void;
   onRetry: () => void;
 }) => (
-  <Dialog open={isOpen} onOpenChange={onClose}>
+  <Dialog
+    open={isOpen}
+    onOpenChange={(open) => {
+      if (!open) onClose();
+    }}
+  >
     <DialogContent className="sm:max-w-md p-0 overflow-hidden rounded-2xl shadow-xl">
       {/* Header */}
       <div className="bg-gray-50 px-6 py-4  text-center">
@@ -288,6 +310,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   const STORAGE_KEY = `passage-${passage.id}-timer`;
   const router = useRouter();
   const { user, isLoggedIn, isLoading } = useUser();
+
   const [answers, setAnswers] = useState<AnswerState>({});
   const [showResults, setShowResults] = useState(false); // used to lock questions after submit
   const [score, setScore] = useState(0);
@@ -296,17 +319,24 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // result modal
+
   const [timeLeft, setTimeLeft] = useState(TOTAL_TIME);
   const [isTimeOutModalOpen, setIsTimeOutModalOpen] = useState(false); // time out modal
   const [timerKey, setTimerKey] = useState(0); // to restart timer on reset
   const [isTimerRunning, setIsTimerRunning] = useState(false); // pause timer until login
 
-  const closedQuestions = passage.questions.filter((q) => q.type === "CLOSED");
-  const openQuestions = passage.questions.filter((q) => q.type === "OPEN");
-  const totalClosedQuestions = closedQuestions.length + openQuestions.length;
+  // timeout holatini login aniqlangunga qadar "pending" qilib turamiz
+  const pendingTimeoutRef = useRef(false);
+
+  // localStorage yozishni throttle qilish uchun
+  const lastPersistAtRef = useRef<number>(0);
+
+  // ✅ Natija: barcha savollar (OPEN + CLOSED) hisoblanadi
+  const totalQuestions = passage.questions.length;
   const scorePercentage =
-    totalClosedQuestions > 0 ? (score / totalClosedQuestions) * 100 : 0;
+    totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
   const showCertificate = scorePercentage >= 90;
+
   const studentName =
     user?.fullName || user?.email || "Foydalanuvchi nomi kiritilmagan";
 
@@ -322,6 +352,32 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     if (typeof window === "undefined") return;
     localStorage.removeItem(STORAGE_KEY);
   }, [STORAGE_KEY]);
+
+  const persistTimerState = useCallback(
+    (force = false) => {
+      if (typeof window === "undefined") return;
+
+      const now = Date.now();
+      const shouldWrite =
+        force ||
+        now - lastPersistAtRef.current >= 5000 || // har 5 sekundda
+        timeLeft === 0 ||
+        !isTimerRunning;
+
+      if (!shouldWrite) return;
+
+      lastPersistAtRef.current = now;
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          timeLeft,
+          lastUpdated: now,
+          wasRunning: isTimerRunning,
+        })
+      );
+    },
+    [STORAGE_KEY, isTimerRunning, timeLeft]
+  );
 
   const gradeQuiz = useCallback(async () => {
     if (isLoading) {
@@ -344,10 +400,13 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
 
     const hasUnanswered = passage.questions.some((question) => {
       const value = answers[question.id];
+
       if (question.type === "OPEN") {
         return typeof value !== "string" || value.trim().length === 0;
       }
-      return value === undefined;
+
+      // CLOSED: index bo'lishi kerak
+      return typeof value !== "number";
     });
 
     if (hasUnanswered) {
@@ -360,6 +419,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
 
     try {
       setIsSubmitting(true);
+
       const result = await gradePassageAnswers({
         passageId: passage.id,
         answers,
@@ -371,9 +431,14 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       }, {} as Record<string, QuestionEvaluationResult>);
 
       setQuestionResults(mappedResults);
+
+      // ✅ score serverdan keladi (OPEN + CLOSED hisoblangan deb qabul qilamiz)
       setScore(result.score);
-      setShowResults(true); // just to lock inputs, not to show per-question correctness
+
+      // lock inputs
+      setShowResults(true);
       setIsModalOpen(true);
+
       clearTimerStorage();
     } catch (error) {
       const message =
@@ -404,6 +469,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
   // Restore timer state from localStorage on mount
   useEffect(() => {
     if (typeof window === "undefined") return;
+
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) return;
 
@@ -413,15 +479,19 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
         lastUpdated: number;
         wasRunning: boolean;
       };
+
       const elapsedSeconds = parsed.wasRunning
         ? Math.floor((Date.now() - parsed.lastUpdated) / 1000)
         : 0;
+
       const remaining = Math.max(parsed.timeLeft - elapsedSeconds, 0);
 
       setTimeLeft(remaining);
+
       if (remaining === 0) {
+        // login aniqlanguncha modalni ochmaymiz
+        pendingTimeoutRef.current = true;
         setIsTimerRunning(false);
-        setIsTimeOutModalOpen(true);
       }
     } catch {
       clearTimerStorage();
@@ -445,32 +515,51 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
     return () => clearInterval(timer);
   }, [timerKey, isTimerRunning]);
 
-  // Start timer only after user is confirmed logged in
+  // Start/stop timer only after user is confirmed logged in,
+  // and do not run when showResults or time is over
   useEffect(() => {
     if (isLoading) return;
-    setIsTimerRunning(isLoggedIn);
-  }, [isLoggedIn, isLoading]);
 
-  // Persist timer state so reload keeps remaining time
+    const canRun = isLoggedIn && !showResults && timeLeft > 0;
+    setIsTimerRunning(canRun);
+
+    // agar oldin timeout bo'lib qolgan bo'lsa, login bo'lgandan keyin modal ko'rsatamiz
+    if (
+      isLoggedIn &&
+      pendingTimeoutRef.current &&
+      timeLeft === 0 &&
+      !showResults
+    ) {
+      setIsTimeOutModalOpen(true);
+      pendingTimeoutRef.current = false;
+    }
+  }, [isLoggedIn, isLoading, showResults, timeLeft]);
+
+  // Persist timer state (throttled)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        timeLeft,
-        lastUpdated: Date.now(),
-        wasRunning: isTimerRunning,
-      })
-    );
-  }, [timeLeft, STORAGE_KEY, isTimerRunning]);
+    persistTimerState(false);
+  }, [timeLeft, isTimerRunning, persistTimerState]);
+
+  // Ensure we flush timer state on unmount
+  useEffect(() => {
+    return () => {
+      persistTimerState(true);
+    };
+  }, [persistTimerState]);
 
   // When time is over, just show modal, don't grade
   useEffect(() => {
     if (timeLeft === 0 && !showResults) {
-      setIsTimeOutModalOpen(true);
       setIsTimerRunning(false);
+
+      // agar user login bo'lsa — timeout modalni darhol ko'rsatamiz
+      if (!isLoading && isLoggedIn) {
+        setIsTimeOutModalOpen(true);
+      } else {
+        pendingTimeoutRef.current = true;
+      }
     }
-  }, [timeLeft, showResults]);
+  }, [timeLeft, showResults, isLoggedIn, isLoading]);
 
   useEffect(() => {
     if (showResults) {
@@ -491,18 +580,30 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
 
   const resetQuiz = () => {
     clearTimerStorage();
+    pendingTimeoutRef.current = false;
+
     setAnswers({});
     setShowResults(false);
     setScore(0);
     setQuestionResults({});
     setIsSubmitting(false);
+    setIsModalOpen(false);
+
     setTimeLeft(TOTAL_TIME);
     setTimerKey((prev) => prev + 1); // restart timer
-    setIsTimerRunning(isLoggedIn); // Only restart timer for logged-in users
+
+    // login bo'lsa timer qaytadan yuradi, bo'lmasa yo'q
+    setIsTimerRunning(!isLoading && isLoggedIn);
   };
 
   const handleDownloadCertificate = useCallback(() => {
     const passageTitle = passage.title;
+
+    const safeTitle = passageTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .trim()
+      .replace(/\s+/g, "-");
 
     const canvas = document.createElement("canvas");
     canvas.width = 800;
@@ -553,7 +654,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
       // Date
       ctx.fillStyle = "#4B5563";
       ctx.font = "18px Arial";
-      const date = new Date().toLocaleDateString("en-US", {
+      const date = new Date().toLocaleDateString("uz-UZ", {
         year: "numeric",
         month: "long",
         day: "numeric",
@@ -571,14 +672,14 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = `sertifikat-${passageTitle
-          .toLowerCase()
-          .replace(/\s+/g, "-")}.png`;
+        link.download = `sertifikat-${safeTitle || "matn"}.png`;
         link.click();
-        URL.revokeObjectURL(url);
+
+        // revoke biroz keyinroq
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
       }
     }, "image/png");
-  }, [passage, studentName]);
+  }, [passage.title, studentName]);
 
   const passageGrade = GRADE_MAP[passage.grade as keyof typeof GRADE_MAP];
 
@@ -643,7 +744,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
             {/* --- Questions/Tests Header --- */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-2">
               <h2 className="text-center xs:text-start text-2xl font-bold text-gray-800">
-                Matn bo‘yicha testlar
+                Matn bo‘yicha savollar
               </h2>
               {/* time bottom */}
               <div className="w-full max-w-1/2 xs:max-w-full fixed bottom-3 left-1/2 -translate-x-1/2 md:w-auto flex flex-col gap-2">
@@ -730,7 +831,7 @@ const PassageDetailClient = ({ passage }: PassageDetailClientProps) => {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           score={score}
-          totalClosedQuestions={totalClosedQuestions}
+          totalQuestions={totalQuestions}
           scorePercentage={scorePercentage}
           showCertificate={showCertificate}
           passageTitle={passage.title}
