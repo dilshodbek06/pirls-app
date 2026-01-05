@@ -9,6 +9,7 @@ import { useUser } from "@/hooks/use-user";
 import { UserAvatarDropdown } from "@/components/UserAvatarDropdown";
 import { logoutAction } from "@/actions/auth";
 import { clearUserCache } from "@/hooks/use-user";
+import { User } from "@/lib/session";
 
 const Header = () => {
   const location = usePathname();
@@ -21,6 +22,16 @@ const Header = () => {
     { path: "/about", label: "Biz haqimizda" },
     { path: "/contact", label: "Aloqa" },
   ];
+
+  const resultsLinkByRole: Record<User["role"], string | null> = {
+    TEACHER: "/teacher/results",
+    ADMIN: "/admin/results",
+    USER: "/results",
+    GUEST: null,
+  };
+
+  const resultsLink =
+    isLoggedIn && user ? resultsLinkByRole[user.role] : null;
 
   return (
     <header className="relative z-50 w-full">
@@ -58,6 +69,19 @@ const Header = () => {
                 )}
               </Link>
             ))}
+            {resultsLink && (
+              <Link
+                href={resultsLink}
+                className={`text-sm font-semibold transition-colors hover:text-white/80 relative drop-shadow-md ${
+                  location === resultsLink ? "text-white" : "text-white/90"
+                }`}
+              >
+                Natijalar
+                {location === resultsLink && (
+                  <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-white animate-scale-in" />
+                )}
+              </Link>
+            )}
           </nav>
 
           {/* Auth Section */}
@@ -106,6 +130,17 @@ const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {resultsLink && (
+              <Link
+                href={resultsLink}
+                onClick={() => setMenuOpen(false)}
+                className={`text-base font-medium transition-colors hover:text-white/80 ${
+                  location === resultsLink ? "text-white" : "text-white/90"
+                }`}
+              >
+                Natijalar
+              </Link>
+            )}
 
             {/* Mobile Auth Section */}
             <div className="w-full px-4 border-t border-white/20 pt-4 mt-2 space-y-2">
