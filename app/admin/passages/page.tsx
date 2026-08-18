@@ -26,7 +26,7 @@ const Page = async () => {
           {passages.length ? (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {passages.map((passage) => (
-                <PassageCard key={passage.id} passage={passage} />
+                <PassageCard key={passage.id} passage={passage} showEditButton />
               ))}
             </div>
           ) : (

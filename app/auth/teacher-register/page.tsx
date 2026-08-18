@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { registerAction } from "@/actions/auth";
 import toast from "react-hot-toast";
 import Link from "next/link";
-import { clearUserCache } from "@/hooks/use-user";
+import { clearUserCache, useUser } from "@/hooks/use-user";
 
 // --- Data: Viloyatlar → Tumanlar ---
 const UZ_REGIONS: Record<string, string[]> = {
@@ -237,6 +237,7 @@ const provinces = Object.keys(UZ_REGIONS);
 
 const TeacherRegister = () => {
   const router = useRouter();
+  const { user, isLoggedIn, isLoading: isUserLoading } = useUser();
   const [formData, setFormData] = useState({
     fullName: "",
     age: "",
@@ -248,6 +249,14 @@ const TeacherRegister = () => {
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && isLoggedIn && user) {
+      if (user.role === "ADMIN") router.replace("/admin/dashboard");
+      else if (user.role === "TEACHER") router.replace("/teacher/dashboard");
+      else router.replace("/passages");
+    }
+  }, [isUserLoading, isLoggedIn, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

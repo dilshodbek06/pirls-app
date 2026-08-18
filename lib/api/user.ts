@@ -4,7 +4,10 @@ import { User } from "@/lib/session";
 export async function fetchCurrentUser(): Promise<User | null> {
   try {
     const response = await apiClient.get<{ user: User; success: boolean }>(
-      "/api/auth/user"
+      "/api/auth/user",
+      {
+        params: { t: Date.now() },
+      }
     );
 
     if (response.data.success && response.data.user) {

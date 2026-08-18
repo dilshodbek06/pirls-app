@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,7 @@ import { useRouter } from "next/navigation";
 import { registerPupil } from "@/actions/auth";
 import { DISTRICTS, REGIONS } from "@/mock/auth";
 import toast from "react-hot-toast";
-import { clearUserCache } from "@/hooks/use-user";
+import { clearUserCache, useUser } from "@/hooks/use-user";
 import Link from "next/link";
 
 type FormData = {
@@ -40,6 +40,7 @@ type FormData = {
 
 const Register = () => {
   const router = useRouter();
+  const { user, isLoggedIn, isLoading: isUserLoading } = useUser();
   const [formData, setFormData] = useState<FormData>({
     fullName: "",
     age: "",
@@ -51,6 +52,14 @@ const Register = () => {
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && isLoggedIn && user) {
+      if (user.role === "ADMIN") router.replace("/admin/dashboard");
+      else if (user.role === "TEACHER") router.replace("/teacher/dashboard");
+      else router.replace("/passages");
+    }
+  }, [isUserLoading, isLoggedIn, user, router]);
 
   const districtOptions = useMemo(() => {
     return formData.province

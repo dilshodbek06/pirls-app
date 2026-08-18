@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, ArrowRight } from "lucide-react";
+import { BookOpen, ArrowRight, Pencil } from "lucide-react";
 import Link from "next/link";
 import { FullPassage } from "@/types";
 
 interface PassageCardProps {
   passage: FullPassage;
+  /** Admin ko'rinishida tahrirlash tugmasini ko'rsatish */
+  showEditButton?: boolean;
 }
 
-const PassageCard = ({ passage }: PassageCardProps) => {
+const PassageCard = ({ passage, showEditButton = false }: PassageCardProps) => {
   const difficultyLevels = {
     GRADE_3: "bg-accent/10 text-accent border-accent/20",
     GRADE_4: "bg-secondary/10 text-secondary border-secondary/20",
@@ -29,6 +31,17 @@ const PassageCard = ({ passage }: PassageCardProps) => {
               : ""}
           </Badge>
         </div>
+
+        {showEditButton && (
+          <Link href={`/admin/passages/${passage.id}/edit`}>
+            <button
+              className="p-2 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition"
+              title="Tahrirlash"
+            >
+              <Pencil className="w-4 h-4" />
+            </button>
+          </Link>
+        )}
       </div>
 
       <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">
@@ -55,3 +68,4 @@ const PassageCard = ({ passage }: PassageCardProps) => {
 };
 
 export default PassageCard;
+

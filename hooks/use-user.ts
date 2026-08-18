@@ -32,11 +32,21 @@ let cacheTimestamp = 0;
 let fetchPromise: Promise<User | null> | null = null;
 let lastFocusRevalidation = 0;
 
-export function clearUserCache() {
-  cachedUser = null;
-  cacheTimestamp = 0;
+const AUTH_CHANGE_EVENT = "pirls_auth_state_change";
+
+export function clearUserCache(newUser?: User | null) {
+  cachedUser = newUser !== undefined ? newUser : null;
+  cacheTimestamp = newUser !== undefined ? Date.now() : 0;
   fetchPromise = null;
   lastFocusRevalidation = 0;
+
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(
+      new CustomEvent(AUTH_CHANGE_EVENT, {
+        detail: { user: newUser },
+      })
+    );
+  }
 }
 
 function isUserLoggedIn(user: unknown): boolean {
@@ -163,12 +173,36 @@ export function useUser(options?: UseUserOptions) {
     };
   }, [fetchUser]);
 
-  // Storage event: conservative approach (clear and revalidate)
+  // Listen for local auth state changes (login / logout / clearUserCache)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handleAuthChange = (event: Event) => {
+      const customEvent = event as CustomEvent<{ user?: User | null }>;
+      if (customEvent.detail && customEvent.detail.user !== undefined) {
+        const newUser = customEvent.detail.user;
+        if (isMountedRef.current) {
+          setState({
+            user: newUser,
+            isLoading: false,
+            isLoggedIn: isUserLoggedIn(newUser),
+            error: null,
+          });
+        }
+      } else {
+        // Refetch fresh user data immediately
+        void fetchUser(true);
+      }
+    };
+
+    window.addEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, handleAuthChange);
+  }, [fetchUser]);
+
+  // Storage event: across multiple browser tabs
   useEffect(() => {
     if (typeof window === "undefined") return;
     const handler = () => {
-      // When other tabs change auth-related storage, clear local cache and revalidate.
-      // Optionally you can check ev.key for specific auth keys to be less aggressive.
       clearUserCache();
       void fetchUser(true);
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -10,16 +10,25 @@ import { Card, CardContent } from "@/components/ui/card";
 import { GraduationCap, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { loginAction } from "@/actions/auth";
-import { clearUserCache } from "@/hooks/use-user";
+import { clearUserCache, useUser } from "@/hooks/use-user";
 
 const TeacherLogin = () => {
   const router = useRouter();
+  const { user, isLoggedIn, isLoading: isUserLoading } = useUser();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!isUserLoading && isLoggedIn && user) {
+      if (user.role === "ADMIN") router.replace("/admin/dashboard");
+      else if (user.role === "TEACHER") router.replace("/teacher/dashboard");
+      else router.replace("/passages");
+    }
+  }, [isUserLoading, isLoggedIn, user, router]);
 
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({
